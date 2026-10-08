@@ -1,0 +1,33 @@
+{
+  "name": "dsh-orchestrator2",
+  "version": "2.8.0",
+  "description": "自动开发调度器2.0 agent preset（三阶段：设计 → 自动推进 → 验收修复循环）",
+  "files": [
+    "presets/orchestrator2/agent.cordis.yml",
+    "presets/orchestrator2/preset.yml",
+    "presets/orchestrator2/phase-gate.mjs",
+    "presets/orchestrator2/budget.mjs",
+    "presets/orchestrator2/dispatch.mjs",
+    "presets/orchestrator2/model-routes.mjs",
+    "presets/orchestrator2/session-routes.mjs",
+    "presets/orchestrator2/role-tools.mjs",
+    "presets/orchestrator2/route-fallback.mjs",
+    "presets/orchestrator2/docs/使用手册.md",
+    "presets/orchestrator2/spec/**",
+    "presets/agent-preset.patch.yml",
+    "lib/index.js",
+    "docs/自动开发调度器2.0-使用手册.md",
+    "docs/项目目录及协同开发规范-v2.1.md",
+    "cordis.patch.yml",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "exclude": [
+    "tests/**",
+    "02-代码/orchestrator2/tests/**",
+    "**/tests/**",
+    "README.md#source-side"
+  ],
+  "note": "本文件是**构建材料清单**（源码侧单一来源）：① files = 进交付包的白名单；② exclude 显式排除开发期回归资产 tests/ 与源码侧 README（README.md#source-side 为说明性条目，构建时只打包包内 README）。`02-代码/orchestrator2/tests/` 是开发期回归资产（run-all.mjs + 断言套件 + 夹具），**不进交付包、不进 zip**——开发员用 `node 02-代码/orchestrator2/tests/run-all.mjs` 在源码侧跑；构建脚本（调度员）按本清单复制并在打包后断言产物内无 tests 路径。规范 v2.1 六区结构中的 02-代码/ 目录本身也不进预设包。③ **lib/index.js 的源码侧来源**（T9② 源化）：该件自 2.1.2 起以 `02-代码/orchestrator2/lib/index.js` 为唯一来源，构建时逐字节复制进包（此前仅存于交付包 = 源码侧漂移，已补齐）。④ **presets/agent-preset.patch.yml 为构建期生成物**（TP-D2-修复1 · D2）：0.1.7 声明式预设机制的声明文件，由 `tools/gen-preset-patch.mjs` 从 agent.cordis.yml + preset.yml 生成（`--check` 语义比对模式），源码侧 `presets/agent-preset.patch.yml` 入 git、构建时随本清单复制进包；包内 package.json 的 `dsh.bundle.patch` 必须列该文件（pkg-consistency D9-9 断言），声明插件名集合与源码 yml 一致性由 D9-10 断言。⑤ **T3-TP1 四模块显式入列**（2026-10-01）：model-routes / session-routes / role-tools / route-fallback 是模型路由与会话覆盖功能的承重件，由 agent.cordis.yml 的 delegation 组以 `./x.mjs` 装载——漏列即交付包缺件、预设挂载失败，故逐件写入 files 白名单（不依赖目录通配）。⑥ **v2.7.1 修复摘要**（T3-TP1-修复1 · issueId=T3TP1-LIVE-01，2026-10-02）：v2.7.0 的两个纯函数库模块 `model-routes.mjs` / `session-routes.mjs` 缺 `apply` 导出，cordis `registry.plugin()` 对这两行同步抛 `invalid plugin`（mount audit 报 `never started`），**整个预设挂载被拒**——新会话预设选择器不可见、老会话 resume 报错；两模块各补空 `apply()` 空载（注册行为仍由 role-tools/route-fallback 承担，行为零变化），`config-check` 增 T3h「本地模块行必须导出 apply」装配断言（含缺 apply 夹具检红演算）防回归。files 白名单与 exclude 口径不变。"
+}

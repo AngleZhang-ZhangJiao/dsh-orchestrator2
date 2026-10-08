@@ -1,0 +1,11 @@
+node_modules/
+.tmp/
+.codegraph/
+.firecrawl/
+.pnpm-store/
+.venv/
+__pycache__/
+
+# 插件源码侧的开发期回归缓存：夹具项目树与运行结果均为可再生中间物
+02-代码/orchestrator2/tests/.cache/
+02-代码/orchestrator2/tests/fixtures/e2e-fixture-projects/
