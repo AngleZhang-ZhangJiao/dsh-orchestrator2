@@ -1,6 +1,6 @@
 {
   "name": "dsh-orchestrator2",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "自动开发调度器2.0 agent preset（三阶段：设计 → 自动推进 → 验收修复循环）",
   "files": [
     "presets/orchestrator2/agent.cordis.yml",

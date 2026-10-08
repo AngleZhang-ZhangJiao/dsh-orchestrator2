@@ -230,8 +230,8 @@ const specText = readFileSync(join(SPEC_DIR, '项目目录及协同开发规范-
 check('M1-2a 规范含「两层状态源」口径（§三）', specText.includes('两层状态源（v2.1 · M1）'))
 check('M1-2b 规范说明开工判定先读产品状态再下钻',
   specText.includes('先读产品状态.md 定位设计期环节，再下钻任务包'))
-check('M1-2c 模板索引含产品状态.md 行且总数 39',
-  specText.includes('`03-开发协同/产品状态.md`') && specText.includes('模板总数 39 件'))
+check('M1-2c 模板索引含产品状态.md 行且总数 40（TP1-D3：随开发准备.md 加行 39→40）',
+  specText.includes('`03-开发协同/产品状态.md`') && specText.includes('模板总数 40 件'))
 
 // ── M4/M5/P2-1 · 模板集与规范文本口径 ────────────────────────────────────
 const statusTpl = readFileSync(join(TPL, '03-开发协同', '状态.md'), 'utf8')

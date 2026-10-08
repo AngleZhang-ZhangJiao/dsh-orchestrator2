@@ -1,16 +1,17 @@
 /**
- * D9 · 插件包 v2.8.0 构建材料就绪自检（AC6 开发员部分；TP-B 清偿后 REF 重指 05-交付；
+ * D9 · 插件包 v2.9.0 构建材料就绪自检（AC6 开发员部分；TP-B 清偿后 REF 重指 05-交付；
  *    TP-D2 · D7 随版本 2.5.0→2.6.0 演进，D9-7 构建前口径改 EXEMPT；
  *    T3-TP1 · D6 义务②：常量族随版本 2.6.1→2.7.0 演进——REF 目录常量、D9-3/D9-7/D9-8
  *    版本断言与 BOM 夹具字面量一并同步，构建前 EXEMPT 语义保留；
  *    T3-TP1-修复1 · R2：常量族随版本 2.7.0→2.7.1 再演进，口径同上不变；
- *    TP1-对话形态纪律 · 收尾升版：常量族随版本 2.7.1→2.8.0 再演进，口径同上不变）：
+ *    TP1-对话形态纪律 · 收尾升版：常量族随版本 2.7.1→2.8.0 再演进，口径同上不变；
+ *    TP1-首次使用引导 · 收尾升版：常量族随版本 2.8.0→2.9.0 再演进，口径同上不变）：
  * ① 源码侧 `02-代码/orchestrator2/` 树完整（相对 v2.0.0 安装包 presets/orchestrator2 的
  *    结构参考，逐件对照：新增件应出现、取消件应消失）；
  * ② 列出「构建阶段由调度员执行/同步」的清单（不改 05-交付，只报告）：
- *    package.json 版本 2.8.0、docs 拷贝（使用手册 + 规范 v2.1.2）、presets 逐字节同步、
+ *    package.json 版本 2.9.0、docs 拷贝（使用手册 + 规范 v2.1.4）、presets 逐字节同步、
  *    zip、测试入口说明。
- * ③ D9-3（TP-B · D7 断言重写；TP-D2 · D7 演进至 v2.6.0）：REF 指向 05-交付/安装包/dsh-orchestrator2-v2.8.0——
+ * ③ D9-3（TP-B · D7 断言重写；TP-D2 · D7 演进至 v2.6.0）：REF 指向 05-交付/安装包/dsh-orchestrator2-v2.9.0——
  *    构建前目标包不存在（D9-7 红属预期，见 AC-B-5 分阶段口径），构建后须存在且
  *    与源码侧 spec/ docs/ 逐字节一致（调度员复跑本脚本核对，fail=0 才算全绿）。
  * 输出供调度员构建后复用比对；本脚本自身只读。
@@ -38,7 +39,7 @@ const { check, writeResult } = reporter('pkg-consistency')
 const out = []
 
 const SRC = join(ROOT, '02-代码', 'orchestrator2')
-const REF = join(ROOT, '05-交付', '安装包', 'dsh-orchestrator2-v2.8.0')
+const REF = join(ROOT, '05-交付', '安装包', 'dsh-orchestrator2-v2.9.0')
 const REF_PRESET = join(REF, 'presets', 'orchestrator2')
 const LEGACY_REF = join(ROOT, '04-交付', '安装包', 'dsh-orchestrator2-v2.0.0')
 
@@ -57,7 +58,7 @@ const srcList = walk(SRC).sort()
 const refList = walk(REF_PRESET).sort() // 构建前 REF 不存在 → 空清单（D9-7 按预期红）
 const legacyList = walk(join(LEGACY_REF, 'presets', 'orchestrator2')).sort()
 out.push(`=== 源码侧 orchestrator2：${srcList.length} 件 ===`)
-out.push(`=== v2.8.0 目标安装包 presets/orchestrator2（构建后逐字节同步对象）：${refList.length} 件（构建前不存在=预期）===`)
+out.push(`=== v2.9.0 目标安装包 presets/orchestrator2（构建后逐字节同步对象）：${refList.length} 件（构建前不存在=预期）===`)
 out.push(`=== v2.0.0 安装包 presets/orchestrator2（结构参考）：${legacyList.length} 件 ===`)
 
 // ① 新增件：应在源码侧存在（v2.1 新增模板 + 手册副本）
@@ -113,21 +114,21 @@ out.push('  删除清单：')
 for (const p of removed) out.push('    - ' + p)
 out.push('  内容变更清单（v2.1 改版件）：')
 for (const p of changed) out.push('    ~ ' + p)
-check('D9-3 REF 重指 05-交付 v2.8.0 目标包（TP-B · D7 断言重写；TP-D2 · D7 随版本演进；T3-TP1-修复1 · R2 随 2.7.1 再演进；TP1-对话形态纪律 · 收尾随 2.8.0 再演进：行为化终点判据——构建后存在且逐字节一致，由 D9-7 + 调度员复跑承担）',
-  REF.includes(join('05-交付', '安装包')) && REF.includes('dsh-orchestrator2-v2.8.0'),
+check('D9-3 REF 重指 05-交付 v2.9.0 目标包（TP-B · D7 断言重写；TP-D2 · D7 随版本演进；T3-TP1-修复1 · R2 随 2.7.1 再演进；TP1-对话形态纪律 · 收尾随 2.8.0 再演进；TP1-首次使用引导 · 收尾随 2.9.0 再演进：行为化终点判据——构建后存在且逐字节一致，由 D9-7 + 调度员复跑承担）',
+  REF.includes(join('05-交付', '安装包')) && REF.includes('dsh-orchestrator2-v2.9.0'),
   `REF=${relative(ROOT, REF)}`)
 
 // ④ 构建阶段调度员清单（本脚本只报告，不执行；开发员不动 05-交付）
 out.push('', '--- 构建阶段（调度员执行；开发员不改 05-交付）---')
 const buildSteps = [
-  `新建 05-交付/安装包/dsh-orchestrator2-v2.8.0/（对照 ${relative(ROOT, LEGACY_REF)} 结构）`,
+  `新建 05-交付/安装包/dsh-orchestrator2-v2.9.0/（对照 ${relative(ROOT, LEGACY_REF)} 结构）`,
   'presets/orchestrator2 ← 02-代码/orchestrator2/ 逐字节同步（含 spec 全量、docs/使用手册.md；T3-TP1 新增四模块 model-routes/session-routes/role-tools/route-fallback 须随 packaging.json files 白名单进包）',
-  'package.json 版本号 → 2.8.0（源码侧无 package.json，由调度员在包内新建/改）',
-  'docs/ ← 使用手册 v2.8.0 + 规范 v2.1.2（自 02-代码/orchestrator2/docs/ 与 spec/）',
-  'cordis.patch.yml / README.md / LICENSE ← 沿用 v2.0.0 包内件（version 字段随 2.8.0）',
+  'package.json 版本号 → 2.9.0（源码侧无 package.json，由调度员在包内新建/改）',
+  'docs/ ← 使用手册 v2.9.0 + 规范 v2.1.4（自 02-代码/orchestrator2/docs/ 与 spec/）',
+  'cordis.patch.yml / README.md / LICENSE ← 沿用 v2.0.0 包内件（version 字段随 2.9.0）',
   'lib/index.js ← **源码侧为唯一来源**：自 02-代码/orchestrator2/lib/index.js 逐字节复制（packaging.json files 已声明；T9 源化后交付包不再是唯一副本）',
   '测试入口说明.md → v2.1 三形态（新产品回归 / 场景1 fixture / 场景2 实测）',
-  'zip：dsh-orchestrator2-v2.8.0.zip',
+  'zip：dsh-orchestrator2-v2.9.0.zip',
   `构建后复跑本脚本：D9-7 转绿（目标包存在）且两树 spec/ 与 docs/ 逐字节一致（当前 REF=${relative(ROOT, REF)} 构建前不存在=预期；结构参照=${relative(ROOT, LEGACY_REF)}，内容差异见上「结构差异」）`,
 ]
 for (const s of buildSteps) out.push('  • ' + s)
@@ -149,7 +150,7 @@ const refExistsNow = existsSync(REF_PRESET)
 const d97Status = refExistsNow
   ? `PASS：目标包已构建（${relative(ROOT, REF_PRESET)}）`
   : 'EXEMPT（构建前目标包不存在，分阶段口径；调度员构建后复跑本脚本须转 PASS）'
-check('D9-7 构建后目标包存在（05-交付 v2.8.0；构建前不存在=EXEMPT，TP-D2 · D7 演进）',
+check('D9-7 构建后目标包存在（05-交付 v2.9.0；构建前不存在=EXEMPT，TP-D2 · D7 演进）',
   refExistsNow || d97Status.startsWith('EXEMPT'), d97Status)
 
 // ⑥ D5（TP-B-修复1）：交付包 package.json 无 UTF-8 BOM——0.1.5 启动器 dsh-app-boot 直接
@@ -168,26 +169,27 @@ if (!existsSync(REF_PKG)) {
 }
 check('D5-1 交付包 package.json 无 UTF-8 BOM（构建前不存在=豁免）', bomStatus.startsWith('PASS') || bomStatus.startsWith('EXEMPT'), bomStatus)
 // 夹具演算：BOM 夹具必须检红、干净夹具必须检绿（门禁自身可信可复算）
-const bomFixture = Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), Buffer.from('{"name":"dsh-orchestrator2","version":"2.8.0"}')])
-const cleanFixture = Buffer.from('{"name":"dsh-orchestrator2","version":"2.8.0"}')
+const bomFixture = Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), Buffer.from('{"name":"dsh-orchestrator2","version":"2.9.0"}')])
+const cleanFixture = Buffer.from('{"name":"dsh-orchestrator2","version":"2.9.0"}')
 check('D5-演算 BOM 夹具（EF BB BF 前缀）检红 + 干净夹具检绿',
   hasUtf8Bom(bomFixture) === true && hasUtf8Bom(cleanFixture) === false,
   `BOM夹具=${hasUtf8Bom(bomFixture)} 干净夹具=${hasUtf8Bom(cleanFixture)}`)
 
-// ⑦ TP-C（D8）→ TP-D1（D7）→ TP-D2（D7）→ T3-TP1-修复1（R2）→ TP1-对话形态纪律（收尾升版）演进：
-//    源码侧版本号一致 2.8.0——五处逐一核（packaging.json / lib banner / 使用手册页首 / README
-//    当前版本行 / agent.cordis.yml 当前发布版本注释行——第五处自 TP2 版本元数据同步起锚定
-//    「当前发布版本：<版本>」行，TP-D2 历史段所记 2.6.0、T3-TP1 段所记 2.7.0、T3-TP1-修复1 段
-//    所记 2.7.1 为历史事实不参与断言；交付包内 package.json 归构建阶段调度员，源码侧无此件，不在此列）。
+// ⑦ TP-C（D8）→ TP-D1（D7）→ TP-D2（D7）→ T3-TP1-修复1（R2）→ TP1-对话形态纪律（收尾升版）
+//    → TP1-首次使用引导（收尾升版）演进：源码侧版本号一致 2.9.0——五处逐一核（packaging.json /
+//    lib banner / 使用手册页首 / README 当前版本行 / agent.cordis.yml 当前发布版本注释行——第五处
+//    自 TP2 版本元数据同步起锚定「当前发布版本：<版本>」行，TP-D2 历史段所记 2.6.0、T3-TP1 段
+//    所记 2.7.0、T3-TP1-修复1 段所记 2.7.1、TP1-对话形态纪律 段所记 2.8.0 为历史事实不参与断言；
+//    交付包内 package.json 归构建阶段调度员，源码侧无此件，不在此列）。
 const pkgVersion = JSON.parse(readFileSync(join(SRC, 'packaging.json'), 'utf8')).version
 const bannerText = readFileSync(join(SRC, 'lib', 'index.js'), 'utf8')
 const manualText = readFileSync(join(SRC, 'docs', '使用手册.md'), 'utf8')
 const readmeText = readFileSync(join(SRC, 'README.md'), 'utf8')
 const cordisText = readFileSync(join(SRC, 'agent.cordis.yml'), 'utf8')
-check('D9-8 源码侧版本一致 2.8.0 五处（packaging.json / lib banner / 使用手册 / README / yml 当前发布版本注释行）',
-  pkgVersion === '2.8.0' && bannerText.includes('agent preset v2.8.0') &&
-  manualText.includes('**v2.8.0**') && readmeText.includes('当前源码版本：**v2.8.0**') && cordisText.includes('当前发布版本：2.8.0'),
-  `packaging=${pkgVersion}；banner=${bannerText.includes('agent preset v2.8.0')}；手册=${manualText.includes('**v2.8.0**')}；README=${readmeText.includes('当前源码版本：**v2.8.0**')}；yml当前版本=${cordisText.includes('当前发布版本：2.8.0')}`)
+check('D9-8 源码侧版本一致 2.9.0 五处（packaging.json / lib banner / 使用手册 / README / yml 当前发布版本注释行）',
+  pkgVersion === '2.9.0' && bannerText.includes('agent preset v2.9.0') &&
+  manualText.includes('**v2.9.0**') && readmeText.includes('当前源码版本：**v2.9.0**') && cordisText.includes('当前发布版本：2.9.0'),
+  `packaging=${pkgVersion}；banner=${bannerText.includes('agent preset v2.9.0')}；手册=${manualText.includes('**v2.9.0**')}；README=${readmeText.includes('当前源码版本：**v2.9.0**')}；yml当前版本=${cordisText.includes('当前发布版本：2.9.0')}`)
 
 // ⑧ TP-D2-修复1 · D3②+D3③：0.1.7 声明机制两道护栏（事故沉淀：OPS-20260926 问题 3/4）
 // ② 交付包 package.json 的 dsh.bundle.patch 数组引用的每个文件在包内必须存在（D-D6 死引用清偿；

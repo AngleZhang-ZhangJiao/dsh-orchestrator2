@@ -1,6 +1,6 @@
 # orchestrator2（插件源码侧）
 
-> 当前源码版本：**v2.8.0**（2026-10-08 TP1-对话形态纪律：persona 新增【对话形态纪律】（人读消息 answer-first/结尾唯一下一步/分组≤5/提问纪律/过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），机器层零改动，套件 524→529/0。此前 v2.7.1 为 2026-10-02 T3-TP1-修复1 · issueId=T3TP1-LIVE-01：两纯函数库模块补空 `apply` 空载修复预设挂载被拒（`config-check` 增 T3h 装配断言防回归）；v2.7.0 为 2026-10-01 T3-TP1 子代理模型路由与会话覆盖；v2.6.1 为 2026-09-28 版本元数据同步）。
+> 当前源码版本：**v2.9.0**（2026-10-08 TP1-首次使用引导：persona 新增【首次使用引导】小节（三段式：新会话首条消息秒级只读探查 → 有缺项才提示 → 按需授权补齐 → `enter_auto_mode` 开工门禁）+ `phase-gate.mjs` validateAutoMode 增开发准备门禁（读 `00-项目管理/开发准备.md` 固定块，fail-closed 三态拒绝，无流程类型豁免）+ 开发准备.md 模板与规范 v2.1.4，机器层同步，套件 529→540/0。此前 v2.8.0 为 2026-10-08 TP1-对话形态纪律：persona 新增【对话形态纪律】（人读消息 answer-first/结尾唯一下一步/分组≤5/提问纪律/过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），机器层零改动，套件 524→529/0；v2.7.1 为 2026-10-02 T3-TP1-修复1 · issueId=T3TP1-LIVE-01：两纯函数库模块补空 `apply` 空载修复预设挂载被拒（`config-check` 增 T3h 装配断言防回归）；v2.7.0 为 2026-10-01 T3-TP1 子代理模型路由与会话覆盖；v2.6.1 为 2026-09-28 版本元数据同步）。
 > 本目录 = 插件「自动开发调度器2.0」的**源码**。`04-交付/安装包/dsh-orchestrator2-v<版本>/` 是它的构建产物。
 > 交付包结构（`presets/orchestrator2/` + `lib/` + `docs/` + `cordis.patch.yml` + `package.json`）**不含本 README 与 `tests/`** —— `tests/` 是开发期回归资产，`package.json` 的 `files` 不收它。
 
@@ -80,6 +80,7 @@ node 02-代码/orchestrator2/tests/run-all.mjs --log        # 另存汇总到 te
 
 ## 版本记录
 
+- **v2.9.0（2026-10-08 · TP1-首次使用引导）**：persona 新增【首次使用引导】小节（三段式：新会话首条消息秒级只读探查 → 有缺项才提示 → 按需授权补齐 → 开工门禁复查；探查零副作用，凭据只查 `configured`），`phase-gate.mjs` validateAutoMode 增开发准备门禁（fail-closed 读 `00-项目管理/开发准备.md` 固定块，无流程类型豁免），新增模板 `spec/templates/00-项目管理/开发准备.md` + 规范 v2.1.4，`t2-persona`/`t-templates`/`phase-gate-mock`/`t-spec-scan`/`v2-mechanisms` 断言同步（套件 529→540/0）；`dispatch`/`budget` 零改动，工具契约与流程语义不变。
 - **v2.8.0（2026-10-08 · TP1-对话形态纪律）**：persona 新增【对话形态纪律】小节（人读消息 answer-first / 结尾唯一下一步 / 正文分组 ≤5 / 提问纪律 / 过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），`t2-persona` 断言同步（套件 524→529/0）；机器层 `dispatch`/`phase-gate`/`budget` 零改动，工具契约与流程语义不变。
 - **v2.7.1（2026-10-02 · T3-TP1-修复1）**：两库模块补空 `apply` 空载修复组合树挂载被拒（`invalid plugin` → `never started`）；`config-check` 增本地模块行 `apply` 导出断言防回归。
 - **v2.7.0（2026-10-01 · T3-TP1 子代理模型路由与会话覆盖）**：新增四模块 —— `model-routes.mjs`（持久默认/降级路由，`<DSH_HOME>/orchestrator2/model-routes.json`，每次派工现读 + 原子写 + 校验失败显式报错）、`session-routes.mjs`（会话状态 epoch/override/degraded + child 绑定快照 + `resolveEffectiveRoute` 纯函数）、`role-tools.mjs`（三角色自持派工工具同名替换官方行 + set/reset/inspect 设置工具，嵌套 route 规避 invariant）、`route-fallback.mjs`（`agent/request(-error)` 监听，`prepend: true` 独占处置适用失败 → 一次切换降级、终局传播、不吞取消）；`agent.cordis.yml` 删除官方三角色钉模型三行并新增四模块行；`config-check` T3e 重写为「官方行零残留 + 四模块行在位 + 读 `ROUTE_INIT` 的初始化值断言」，`t2-persona` T2-20 锚点迁移，`pkg-consistency` 版本常量族/REF/BOM 夹具同步，`packaging.json` 版本 2.7.0 + 四模块入 files 白名单，run-all 注册四新套件（断言套件 20 个）；README/手册双文档同步。persona 与流程语义不变，`dispatch`/`phase-gate`/`budget` 零改动（AC14）。

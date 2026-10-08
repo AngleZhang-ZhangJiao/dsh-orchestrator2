@@ -16,6 +16,11 @@
  *             (固定块: 上限三项 + 当前累计行) must be present and parseable.
  *           - 状态头无 `设计目录` 字段 (v1.1 旧式状态头) -> legacy 仅开发路径:
  *             <taskDir>/开发计划/01_需求分析.md + 02_开发方案与任务包.md.
+ *     1b. 开发准备门禁 (v2.1.4 · D2, fail-closed, 无流程类型豁免): the project-level
+ *         record `<root>/00-项目管理/开发准备.md` must exist with a parseable
+ *         fixed block carrying 规范版本 / 必要项 / 未通过项 / 最近复查 / 门禁结论,
+ *         plus 必要项 >= 1, 未通过项 = 0 and 最近复查 as YYYY-MM-DD; the gate runs
+ *         after the budget-ledger fuse and its rejection names the gap.
  *     2. single-package rule (both paths): any OTHER task dir under
  *        03-开发协同/ whose 状态.md parses to a phase that is neither
  *        待启动 nor 已完成 rejects the start.
@@ -132,6 +137,16 @@ const LEDGER_FORGIVEN = { ok: true, forgiven: true }
 /** 台账固定块上限三项的规范措辞（共用，避免多处文案漂移）。 */
 const LEDGER_FIELDS_HINT = '（固定块需含「上限：C运行≤N / B运行≤N / 工作轮≤N」与「当前累计：C运行= / B运行= / 工作轮= / token用量=」两行）'
 
+/** 开发准备记录（项目级，D2 门禁唯一读取源；模板 = spec/templates/00-项目管理/开发准备.md）。 */
+const PREP_RECORD_PATH = join('00-项目管理', '开发准备.md')
+
+/** 准备记录固定块五字段（与模板/persona/手册同口径的四方共享常量，禁止各处造词）。 */
+const PREP_FIELDS = ['规范版本', '必要项', '未通过项', '最近复查', '门禁结论']
+const PREP_FIELDS_HINT = `（固定块需含五行：${PREP_FIELDS.join(' / ')}）`
+
+/** 「最近复查」的日期形态（占位 — 不算日期；不收时间戳，口径最小可判）。 */
+const PREP_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
 /** Render any thrown value the way the goal-round-driver does. */
 function renderThrown(value) {
   return value instanceof Error ? value.message : String(value)
@@ -234,6 +249,57 @@ function checkBudgetLedger({ taskDir, flowType }) {
   const ledger = join(taskDir, BUDGET_LEDGER_NAME)
   if (!isFile(ledger)) return { ok: false, reason: 'missing', path: ledger }
   if (!budgetLedgerParsable(ledger)) return { ok: false, reason: 'unparsable', path: ledger }
+  return { ok: true }
+}
+
+/**
+ * 开发准备门禁（D2 fail-closed）：文件存在 ∧ 固定块可解析 ∧ 五字段齐备 ∧
+ * `必要项` ≥1 ∧ `未通过项` = 0 ∧ `最近复查` 为日期形态 → 放行；任一不满足 →
+ * 拒绝并在信息中点出缺口。纯文件检查、无新依赖、无流程类型豁免
+ * （技术调研储备不进 enter_auto_mode；修复包不重新点火）。
+ * `门禁结论` 字段由人填写留痕，**机器不消费其值**（判定只看上面五项）。
+ * @param {string} rootDir - project root (absolute).
+ * @returns {{ok: true} | {ok: false, message: string}}
+ */
+function checkDevPrep(rootDir) {
+  const path = join(rootDir, PREP_RECORD_PATH)
+  if (!isFile(path)) {
+    return {
+      ok: false,
+      message: `开发准备门禁：缺少 ${path}。请先完成开发准备（新会话首条消息的引导，或按 spec/templates/00-项目管理/开发准备.md 模板建立记录）。`,
+    }
+  }
+  const fields = parseFixedBlockFile(path)
+  if (fields === undefined) {
+    return { ok: false, message: `开发准备门禁：固定块不可解析（${path}）${PREP_FIELDS_HINT}。` }
+  }
+  const missing = PREP_FIELDS.filter((key) => !fields.has(key))
+  if (missing.length > 0) {
+    return { ok: false, message: `开发准备门禁：固定块缺少字段 ${missing.join(' / ')}（${path}）${PREP_FIELDS_HINT}。` }
+  }
+  const required = Number(fields.get('必要项'))
+  if (!Number.isInteger(required) || required < 1) {
+    return {
+      ok: false,
+      message: `开发准备门禁：「必要项」须为 ≥1 的整数（${path} 当前="${fields.get('必要项')}"）——请先在记录中登记本次开发的实际必要项。`,
+    }
+  }
+  const failed = Number(fields.get('未通过项'))
+  if (!Number.isInteger(failed) || failed < 0) {
+    return { ok: false, message: `开发准备门禁：「未通过项」须为 ≥0 的整数（${path} 当前="${fields.get('未通过项')}"）。` }
+  }
+  if (failed > 0) {
+    return {
+      ok: false,
+      message: `开发准备门禁：未通过项=${failed}，逐项见 ${path}（补齐并复查后重新启动自动推进）。`,
+    }
+  }
+  if (!PREP_DATE_RE.test(fields.get('最近复查'))) {
+    return {
+      ok: false,
+      message: `开发准备门禁：「最近复查」须为日期形态 YYYY-MM-DD（${path} 当前="${fields.get('最近复查')}"）——请复查必要项后更新该字段。`,
+    }
+  }
   return { ok: true }
 }
 
@@ -423,6 +489,10 @@ export function validateAutoMode(rootDir, taskDirInput, products = {}) {
     }
   }
 
+  // ── D2 · 开发准备门禁（fail-closed；项目级记录，无流程类型豁免）────────────
+  const prep = checkDevPrep(rootDir)
+  if (!prep.ok) return { ok: false, message: prep.message }
+
   // ── 设计目录内容 + 产品设计全流程 04/06（含 M5 设计冻结哈希核对）──────────
   const invalid = validateV2Path(rootDir, taskDir, designDir, header, flowType, products)
   if (invalid !== undefined) return invalid
@@ -599,7 +669,7 @@ export function apply(ctx) {
   ctx.effect(() => {
     const disposeTool = ctx.tools.register({
       name: 'enter_auto_mode',
-      description: '进入自动推进模式（阶段二）。前置条件：任务包已齐备且用户已明确确认并说「开始自动推进」。校验任务目录的 状态.md（顶部固定格式块可解析、当前阶段=待审核；按「设计目录」字段分支 v2.x 路径——设计目录下 01、02、上级产品任务目录 04/06+确认版本、预算台账机器保险丝——或 legacy 仅开发路径）+ 单包串行校验（排除在跑任务），然后建立推进 goal（推进到『待人工测试』，上限 24 轮）并挂起：本会话本轮结束转 idle 后先压缩上下文，再自动开始第一轮推进。不得在用户未确认时调用。',
+      description: '进入自动推进模式（阶段二）。前置条件：任务包已齐备且用户已明确确认并说「开始自动推进」。校验任务目录的 状态.md（顶部固定格式块可解析、当前阶段=待审核；按「设计目录」字段分支 v2.x 路径——设计目录下 01、02、上级产品任务目录 04/06+确认版本、预算台账机器保险丝——或 legacy 仅开发路径）+ 开发准备门禁（00-项目管理/开发准备.md 固定块 fail-closed：必要项≥1、未通过项=0、最近复查为日期）+ 单包串行校验（排除在跑任务），然后建立推进 goal（推进到『待人工测试』，上限 24 轮）并挂起：本会话本轮结束转 idle 后先压缩上下文，再自动开始第一轮推进。不得在用户未确认时调用。',
       parameters: ENTER_PARAMETERS,
       output: {
         schema: ENTER_OUTPUT_SCHEMA,

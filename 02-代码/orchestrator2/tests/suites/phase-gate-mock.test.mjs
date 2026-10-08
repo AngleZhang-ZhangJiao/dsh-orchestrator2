@@ -141,6 +141,33 @@ check('⑫a 拒绝', r.ok === false && r.message.includes('预算台账'))
 r = run('⑫b 台账固定块不可解析', scenario('t4-bad-ledger', (d) => write(join(d, '03-开发协同', 'TP1-玩具功能', '预算台账.md'), '任务包：TP（不完整）\n')), TASK_REL)
 check('⑫b 拒绝', r.ok === false && r.message.includes('不可解析'))
 
+// ⑬ 开发准备门禁（TP1-首次使用引导 · D2/D3）：三态拒绝 + 齐备放行（AC2-①②③）
+const PREP_REL = ['00-项目管理', '开发准备.md']
+const prepMissingDir = scenario('t4-no-devprep', (d) => rmSync(join(d, ...PREP_REL)))
+r = run('⑬a 无开发准备记录', prepMissingDir, TASK_REL)
+check('⑬a 拒绝且信息含缺失路径与引导语',
+  r.ok === false && r.message.includes('开发准备门禁') && r.message.includes('开发准备.md') &&
+  r.message.includes('请先完成开发准备') && r.message.includes(prepMissingDir))
+r = run('⑬b 固定块缺字段（删「未通过项」行）', scenario('t4-devprep-missing-field', (d) => {
+  const p = join(d, ...PREP_REL)
+  write(p, readFileSync(p, 'utf8').split('\n').filter((l) => !l.startsWith('未通过项：')).join('\n'))
+}), TASK_REL)
+check('⑬b 拒绝且列出缺字段', r.ok === false && r.message.includes('缺少字段') && r.message.includes('未通过项'))
+r = run('⑬c 未通过项>0', scenario('t4-devprep-failed', (d) => {
+  const p = join(d, ...PREP_REL)
+  write(p, readFileSync(p, 'utf8').replace('未通过项：0', '未通过项：2'))
+}), TASK_REL)
+check('⑬c 拒绝且写明未通过项=N 与记录路径',
+  r.ok === false && r.message.includes('未通过项=2') && r.message.includes('开发准备.md'))
+r = run('⑬d 最近复查非日期（占位 —）', scenario('t4-devprep-bad-date', (d) => {
+  const p = join(d, ...PREP_REL)
+  write(p, readFileSync(p, 'utf8').replace('最近复查：2026-09-07', '最近复查：—'))
+}), TASK_REL)
+check('⑬d 拒绝且点名「最近复查」与日期形态',
+  r.ok === false && r.message.includes('最近复查') && r.message.includes('YYYY-MM-DD'))
+r = run('⑬e 齐备记录（既有校验全过）', scenario('t4-devprep-clean', () => {}), TASK_REL)
+check('⑬e 放行（五字段齐备 ∧ 必要项≥1 ∧ 未通过项=0 ∧ 最近复查为日期）', r.ok === true)
+
 // 附加：04/06 误放设计目录内应拒（防错误层级固化）
 r = run('附加 04/06 误放设计目录内', scenario('t4-misplaced', (d) => {
   write(join(DESIGNTASK(d), '04_产品设计方案.md'), readFileSync(join(PRODUCT(d), '04_产品设计方案.md'), 'utf8'))

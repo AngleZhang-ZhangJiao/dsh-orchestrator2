@@ -320,6 +320,42 @@ check('T2-25 TP1-D4 i-have-adhd 署名行（小节内完整串命中 + 与 ponyt
   dlgSection.includes(IHAVE_ADHD_SIGN) && iHaveAdhdSignCount === 1 && cordisText.split(SIGN).length - 1 === 2,
   `小节内=${dlgSection.includes(IHAVE_ADHD_SIGN)} AyoubGhriss 计数=${iHaveAdhdSignCount}（应=1） ponytail 计数=${cordisText.split(SIGN).length - 1}（应=2）`)
 
+// ── TP1-首次使用引导增量：三段式小节的 persona 落点判据 ─────────────────────
+// 回源：01-设计/首次使用引导/04_产品设计方案.md v0.3 §二/§三 + 06 设计定稿记录 v0.3 +
+// 任务包 02 §三 D1「产出」列 8 锚点词（首条消息 / 秒级只读探查 / 有缺项才提示 /
+// 零副作用 / configured / 开发准备.md / 已验证 / 未通过项）。
+// 切片口径同 T2-23：先切出【首次使用引导】小节再逐锚点匹配，避免「首条消息」等
+// 通用词命中 persona 其他小节造成假绿（首节对应 D1 契约条 1~6）。
+const prepStart = persona.indexOf('【首次使用引导')
+const prepSection = prepStart >= 0 ? persona.slice(prepStart).split(/\r?\n[ \t]*\r?\n/)[0] : ''
+check('T2-26 TP1-D1 小节【首次使用引导】存在且落在 persona 段落边界内',
+  prepSection.length > 0, `切片长度 ${prepSection.length} B`)
+
+const tpPrepItems = [
+  ['㊽ TP1-D1 触发与探查清单（首条消息 + 秒级只读探查 + 有缺项才提示 + 3/6 项清单）',
+    ['新会话**首条消息**', '秒级只读探查', '**有缺项才提示**', '插件级 3 项', '项目级 6 项']],
+  ['㊾ TP1-D1 零副作用与 configured 口径（不安装/不改配置/不拉代码 + 只查 configured）',
+    ['**零副作用**', '不安装、不改配置、不 fetch/clone、不写脚手架、不连远程', 'codegraph sync/init',
+      '凭据只查 configured、不读值']],
+  ['㊿ TP1-D1 记录载体与状态词（开发准备.md + 已验证 + 四枚举 + 记录维护责任）',
+    ['`00-项目管理/开发准备.md`', '**已验证**', '用户确认／未验证／不适用',
+      '调度员负责保持记录与现场一致']],
+  ['51 TP1-D1 开工门禁语义句（未通过项=0 + 补齐复查不影响既有授权）',
+    ['enter_auto_mode 前必要项未全部通过会被拒绝并列出缺项', '**未通过项**=0',
+      '补齐后重新复查即可，不影响既有授权']],
+]
+for (const [label, needles] of tpPrepItems) {
+  const missing = needles.filter((n) => !prepSection.includes(n))
+  check(`T2-26 ${label}`, missing.length === 0, missing.length ? `缺：${missing.join(' / ')}` : `判据 ${needles.length} 条全中`)
+}
+// 切片边界负断言：新小节不得把【对话形态纪律】的切片边界撑开（T2-23/24 的假绿防线）。
+// 判据为**边界**而非「是否提到对方」——新节条 4 依 D1 契约必须引用【对话形态纪律】，
+// 故只查「各自起自本小节标题」+「纪律切片未越界吞掉新节」（缺空行分隔即检红）。
+check('T2-27 TP1-D1 新小节与【对话形态纪律】切片互不越界（各起自本小节标题、纪律切片不吞新节）',
+  dlgSection.startsWith('【对话形态纪律') && prepSection.startsWith('【首次使用引导') &&
+  !dlgSection.includes('【首次使用引导'),
+  `纪律切片起自标题=${dlgSection.startsWith('【对话形态纪律')} 新节切片起自标题=${prepSection.startsWith('【首次使用引导')} 纪律切片吞新节=${dlgSection.includes('【首次使用引导')}`)
+
 // T2（02 §四）persona 字节预算断言：条款字数预算的机器护栏（此前套件无此断言，本包新增）。
 // 预算 49152 B = 48 KiB；抬升须随包修订记录显式进行（token 税纪律，04 §五-1）。
 const PERSONA_BYTE_CAP = 49152

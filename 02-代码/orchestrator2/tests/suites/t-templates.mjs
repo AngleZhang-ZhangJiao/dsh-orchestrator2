@@ -78,9 +78,10 @@ const mustExist = [
   ['M1 · 产品状态（两层状态源）', '03-开发协同/产品状态.md'],
   ['M5 · 设计基线示例（设计冻结哈希）', '01-设计/设计基线.example.json'],
   ['P2-1 · 修复包状态（父子归属）', '_任务模板/修复包/状态.md'],
+  ['TP1-D3 · 开发准备记录（首次使用引导门禁）', '00-项目管理/开发准备.md'],
 ]
 const missingNew = mustExist.filter(([, p]) => !existsSync(join(TPL, p)))
-check('AC2-2 新增件齐备（21 项，含 M1 产品状态 / M5 设计基线 / P2-1 修复包状态）', missingNew.length === 0,
+check(`AC2-2 新增件齐备（${mustExist.length} 项，含 M1 产品状态 / M5 设计基线 / P2-1 修复包状态 / TP1-D3 开发准备）`, missingNew.length === 0,
   missingNew.length ? `缺：${missingNew.map(([l]) => l).join(' / ')}` : `${mustExist.length} 件全在`)
 
 // ── ②b §十 对比句算术自洽（S-4，防 B-1 同类错误复发）──────────────────────
