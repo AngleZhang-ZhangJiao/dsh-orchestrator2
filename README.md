@@ -57,13 +57,14 @@ dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.8.0
 
 > 注：0.1.7 起预设走声明式机制（包内 `presets/agent-preset.patch.yml` 在宿主启动时自动把预设声明进组合树）；旧版「裸目录拷贝到 `~/.dsh/.agent-presets`」方式已随 0.1.7 移除，勿再用。
 
-## 仓库结构（发布镜像，只含源码 + 最新交付物）
+## 仓库结构（发布镜像：源码 + 最新交付物 + 安装位子包）
 
 | 路径 | 内容 |
 |---|---|
 | `02-代码/orchestrator2/` | 2.0 预设工程**源码**：persona（agent.cordis.yml）/ 规范 v2.1 与 39 件模板 / dispatch.mjs 机器层 / model-routes 等路由四模块 / tests 回归套件（529 断言） |
 | `05-交付/安装包/dsh-orchestrator2-v2.8.0/` | 当前安装包（60 件：presets/spec/lib/docs + 测试入口说明 + LICENSE + package.json） |
 | `05-交付/安装包/dsh-orchestrator2-v2.8.0.zip` | 同名压缩包（下载即用） |
+| `plugins/dsh-orchestrator2/` | **安装位子包**（不带版本号，随发版原地刷新）：`dsh plugin add` 源码安装与插件市场（dsh-market）从这里装，内容为当前安装包镜像 |
 
 > 设计文档、开发过程记录、历史版本安装包与本地开发历史不在本镜像（发布口径）。规范 v2.1 六区结构中的其余各区（00 项目管理/01 设计/03 开发协同/04 测试）属开发侧材料，不公开发布。
 
@@ -76,4 +77,4 @@ dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.8.0
 
 ## License
 
-MIT（见根目录 `LICENSE`）。本插件 persona 含两处外部形状借鉴并已注明出处：ponytail（MIT, © 2026 DietrichGebert，最小实现七档阶梯）、i-have-adhd（MIT, © 2026 Ayoub Ghriss，对话形态纪律）。
+MIT（许可文本见 `plugins/dsh-orchestrator2/LICENSE`）。本插件 persona 含两处外部形状借鉴并已注明出处：ponytail（MIT, © 2026 DietrichGebert，最小实现七档阶梯）、i-have-adhd（MIT, © 2026 Ayoub Ghriss，对话形态纪律）。

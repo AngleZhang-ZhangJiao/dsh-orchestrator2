@@ -1,0 +1,13 @@
+# dsh-orchestrator2 bundle patch: inserts the host plugin row into the web
+# profile roster. Applied as a profile bundle layer (the `dsh.bundle.patch`
+# manifest field) over dsh-base; activate with
+# `dsh plugin --profile web add link:/path/to/dsh-orchestrator2`.
+#
+# The row is a bare plugin by package name: the node half (exports ".") runs
+# in the host process and syncs the bundled orchestrator2 agent preset into
+# ~/.dsh/.agent-presets/orchestrator2 on startup. No browser half.
+# Independent of dsh-orchestrator (1.0): separate id, separate row — the two
+# install and uninstall side by side without touching each other.
+- insert:
+    - id: orchestrator2
+      name: 'dsh-orchestrator2'
