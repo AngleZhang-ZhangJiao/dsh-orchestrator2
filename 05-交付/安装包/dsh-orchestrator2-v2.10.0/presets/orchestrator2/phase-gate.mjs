@@ -576,7 +576,8 @@ function validateV2Path(rootDir, taskDir, designDir, header, flowType, products)
  * M5 · 设计冻结哈希核对。
  * 口径（计划审核注意事项④）：**任务包 02 引用基线 ID 才核对哈希**（未引用不核，
  * 历史包不强制）；基线文件位于产品任务目录 `设计基线.json`（模板
- * `spec/03-开发协同/设计基线.example.json` / `01-设计/设计基线.example.json`）。
+ * `spec/01-设计/_模板/设计基线.example.json` / `01-设计/_模板/设计基线.example.json`
+ * （v2.1.5 起模板收进 `_模板/`；原 `spec/03-开发协同/…` 历史位写法一并按新树口径顺改）。
  * @returns {{ok: false, message: string} | undefined} an error result, or undefined when ok/skipped.
  */
 function verifyDesignFreeze({ taskDir, productDir, header, products }) {

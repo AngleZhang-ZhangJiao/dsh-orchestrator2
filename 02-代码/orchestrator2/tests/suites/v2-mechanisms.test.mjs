@@ -219,7 +219,7 @@ e = dispatchEnd(dir, TASK_REL, 'whatever', '通过')
 check('M2-10 无锁调用 dispatch_end → 拒绝（重复调用防护）', e.ok === false && e.message.includes('无在跑环节'))
 
 // ── M1 · 两层状态源（产品状态.md 模板）───────────────────────────────────
-const productStatusTpl = join(TPL, '03-开发协同', '产品状态.md')
+const productStatusTpl = join(TPL, '03-开发协同', '_模板', '产品状态.md')
 check('M1-1a 产品状态.md 模板存在', existsSync(productStatusTpl))
 const psText = existsSync(productStatusTpl) ? readFileSync(productStatusTpl, 'utf8') : ''
 check('M1-1b 固定块四字段齐备（当前设计阶段/负责方/活跃任务包/任务包清单）',
@@ -230,11 +230,11 @@ const specText = readFileSync(join(SPEC_DIR, '项目目录及协同开发规范-
 check('M1-2a 规范含「两层状态源」口径（§三）', specText.includes('两层状态源（v2.1 · M1）'))
 check('M1-2b 规范说明开工判定先读产品状态再下钻',
   specText.includes('先读产品状态.md 定位设计期环节，再下钻任务包'))
-check('M1-2c 模板索引含产品状态.md 行且总数 40（TP1-D3：随开发准备.md 加行 39→40）',
-  specText.includes('`03-开发协同/产品状态.md`') && specText.includes('模板总数 40 件'))
+check('M1-2c 模板索引含产品状态.md 行且总数 40（TP1-D3：随开发准备.md 加行 39→40；TP1-模板目录归集：行路径带 _模板/ 前缀 v2.1.5）',
+  specText.includes('`03-开发协同/_模板/产品状态.md`') && specText.includes('模板总数 40 件'))
 
 // ── M4/M5/P2-1 · 模板集与规范文本口径 ────────────────────────────────────
-const statusTpl = readFileSync(join(TPL, '03-开发协同', '状态.md'), 'utf8')
+const statusTpl = readFileSync(join(TPL, '03-开发协同', '_模板', '状态.md'), 'utf8')
 check('T2-1a 状态模板含强制「规范版本：v2.1」', statusTpl.includes('规范版本：v2.1'))
 check('T2-1b 状态模板含 M3 三字段（推进goal/goal状态/启动revision）',
   ['推进goal：', 'goal状态：', '启动revision：'].every((k) => statusTpl.includes(k)))
@@ -243,7 +243,7 @@ check('T2-1c 状态模板含 P2-1 三字段（repairOf/issueId/parentCandidateCo
 const repairStatusTpl = readFileSync(join(TPL, '_任务模板', '修复包', '状态.md'), 'utf8')
 check('T6-1 修复包状态模板含 P2-1 三字段 + 父子同步口径',
   ['repairOf：', 'issueId：', 'parentCandidateCommit：', '父子同步口径'].every((k) => repairStatusTpl.includes(k)))
-const baselineExample = join(TPL, '01-设计', '设计基线.example.json')
+const baselineExample = join(TPL, '01-设计', '_模板', '设计基线.example.json')
 check('T5-1 设计基线示例件存在且为合法 JSON', existsSync(baselineExample) && (() => {
   try { JSON.parse(readFileSync(baselineExample, 'utf8')); return true } catch { return false }
 })())

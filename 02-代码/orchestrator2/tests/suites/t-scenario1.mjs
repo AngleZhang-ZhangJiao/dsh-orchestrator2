@@ -45,7 +45,7 @@ for (const [label, needle] of fuseNeedles) {
 }
 
 // ── ② 系统现状分析模板六节 ────────────────────────────────────────────────
-const tplPath = join(TPL, '01-设计', '02_系统现状分析.md')
+const tplPath = join(TPL, '01-设计', '_模板', '02_系统现状分析.md')
 let tpl = ''
 try {
   tpl = readFileSync(tplPath, 'utf8')

@@ -27,7 +27,7 @@ const arrMatch = gateSrc.match(/const PHASE_VALUES = \[([\s\S]*?)\n\]/)
 const phaseValues = arrMatch === null ? [] : [...arrMatch[1].matchAll(/'([^']+)'/g)].map((m) => m[1])
 
 // ── ① 调研报告模板两小节 ──────────────────────────────────────────────────
-const report = readFileSync(join(TPL, '01-设计', '03_调研报告', '调研报告模板.md'), 'utf8')
+const report = readFileSync(join(TPL, '01-设计', '_模板', '03_调研报告', '调研报告模板.md'), 'utf8')
 check('D7-1a 含「技术路线对比矩阵」小节', report.includes('技术路线对比矩阵'))
 check('D7-1b 含「同类拓展候选」小节', report.includes('同类拓展候选'))
 check('D7-1c 对比矩阵六维度齐备',
@@ -35,7 +35,7 @@ check('D7-1c 对比矩阵六维度齐备',
 check('D7-1d 标注场景2 必填 / 产品调研选填', report.includes('场景2 必填') && report.includes('选填'))
 
 // ── ② 调研汇总报告模板四要素 ──────────────────────────────────────────────
-const summaryPath = join(TPL, '01-设计', '技术调研', '04_调研汇总报告.md')
+const summaryPath = join(TPL, '01-设计', '_模板', '技术调研', '04_调研汇总报告.md')
 let summary = ''
 try {
   summary = readFileSync(summaryPath, 'utf8')
@@ -56,7 +56,7 @@ check('D7-2c 含当面向用户汇报记录段', summary.includes('汇报记录'
 check('D7-2d 含封闭性声明（不生成任务包）', summary.includes('不生成任务包'))
 
 // ── ③ 调研清单泛化 ────────────────────────────────────────────────────────
-const list = readFileSync(join(TPL, '01-设计', '02_同类产品调研清单.md'), 'utf8')
+const list = readFileSync(join(TPL, '01-设计', '_模板', '02_同类产品调研清单.md'), 'utf8')
 check('D7-3a 表头对象化（调研对象）', list.includes('调研对象'))
 check('D7-3b 含「拓展来源」列', list.includes('拓展来源'))
 check('D7-3c 双场景用法注明（产品调研 / 技术调研储备）',
@@ -123,7 +123,7 @@ check('D7-5c 设计目录指向 01-设计/技术调研/<主题>',
 check('D7-5d 状态头无预算计数字段',
   ![...trFields.keys()].some((k) => /C运行|B运行|工作轮|预算/.test(k)), `字段=${[...trFields.keys()].join('/')}`)
 // 场景2 不建 goal：TR fixture 即便阶段=待审核也不应产生开发流水线（此处只断言模板口径）
-const trTpl = readFileSync(join(TPL, '03-开发协同', '状态.md'), 'utf8')
+const trTpl = readFileSync(join(TPL, '03-开发协同', '_模板', '状态.md'), 'utf8')
 check('D7-5e 状态模板流程类型注释含「技术调研储备」', trTpl.includes('技术调研储备'))
 
 // ── TP2-D5：场景2 裁决门槛（清单裁决列 / 汇总三态裁决段 + 反证强制小节 + ASSUMPTION）──

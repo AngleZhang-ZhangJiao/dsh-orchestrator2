@@ -1,6 +1,6 @@
 # orchestrator2（插件源码侧）
 
-> 当前源码版本：**v2.9.0**（2026-10-08 TP1-首次使用引导：persona 新增【首次使用引导】小节（三段式：新会话首条消息秒级只读探查 → 有缺项才提示 → 按需授权补齐 → `enter_auto_mode` 开工门禁）+ `phase-gate.mjs` validateAutoMode 增开发准备门禁（读 `00-项目管理/开发准备.md` 固定块，fail-closed 三态拒绝，无流程类型豁免）+ 开发准备.md 模板与规范 v2.1.4，机器层同步，套件 529→540/0。此前 v2.8.0 为 2026-10-08 TP1-对话形态纪律：persona 新增【对话形态纪律】（人读消息 answer-first/结尾唯一下一步/分组≤5/提问纪律/过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），机器层零改动，套件 524→529/0；v2.7.1 为 2026-10-02 T3-TP1-修复1 · issueId=T3TP1-LIVE-01：两纯函数库模块补空 `apply` 空载修复预设挂载被拒（`config-check` 增 T3h 装配断言防回归）；v2.7.0 为 2026-10-01 T3-TP1 子代理模型路由与会话覆盖；v2.6.1 为 2026-09-28 版本元数据同步）。
+> 当前源码版本：**v2.10.0**（2026-10-10 TP1-模板目录归集：四区「按任务复制用」模板 21 件移入各区 `_模板/` 子文件夹（git mv rename 21 件 + 产品路线图一处引用修正），规范升 v2.1.5（生成器 op 落地：§2.2 目录树四区加分支＋`_任务模板/` 绘制归位＋§10 索引 21 行加前缀＋兼容回退口径句），测试套件六件＋生成器同步（旧平铺位 21 项 mustNotExist 断言，套件 540→561/0），persona 脚手架段与使用手册同源改写，`pkg-consistency` 常量族随版本原子切换，机器层零改动。此前 v2.9.0 为 2026-10-08 TP1-首次使用引导：persona 新增【首次使用引导】小节（三段式：新会话首条消息秒级只读探查 → 有缺项才提示 → 按需授权补齐 → `enter_auto_mode` 开工门禁）+ `phase-gate.mjs` validateAutoMode 增开发准备门禁（读 `00-项目管理/开发准备.md` 固定块，fail-closed 三态拒绝，无流程类型豁免）+ 开发准备.md 模板与规范 v2.1.4，机器层同步，套件 529→540/0；v2.8.0 为 2026-10-08 TP1-对话形态纪律：persona 新增【对话形态纪律】（人读消息 answer-first/结尾唯一下一步/分组≤5/提问纪律/过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），机器层零改动，套件 524→529/0；v2.7.1 为 2026-10-02 T3-TP1-修复1 · issueId=T3TP1-LIVE-01：两纯函数库模块补空 `apply` 空载修复预设挂载被拒（`config-check` 增 T3h 装配断言防回归）；v2.7.0 为 2026-10-01 T3-TP1 子代理模型路由与会话覆盖；v2.6.1 为 2026-09-28 版本元数据同步）。
 > 本目录 = 插件「自动开发调度器2.0」的**源码**。`04-交付/安装包/dsh-orchestrator2-v<版本>/` 是它的构建产物。
 > 交付包结构（`presets/orchestrator2/` + `lib/` + `docs/` + `cordis.patch.yml` + `package.json`）**不含本 README 与 `tests/`** —— `tests/` 是开发期回归资产，`package.json` 的 `files` 不收它。
 
@@ -80,6 +80,7 @@ node 02-代码/orchestrator2/tests/run-all.mjs --log        # 另存汇总到 te
 
 ## 版本记录
 
+- **v2.10.0（2026-10-10 · TP1-模板目录归集）**：四区「按任务复制用」模板 21 件移入各区 `_模板/`（D1 git mv，旧平铺位零残留 + 21 项 mustNotExist 防回归断言，唯一内容级例外＝产品路线图一处引用路径）；规范 v2.1.5 经生成器 op 落地（D2：§2.2 树四区加分支＋`_任务模板/` 绘制归位项目根级＋§10 索引 21 行加前缀＋兼容回退口径句＋散文面三处旧树指针）；测试套件六件＋生成器同步（D3：t-templates mustExist 10 项/read() 9 路径加前缀、t-scenario1/2、v2-mechanisms 字面量、t-spec-scan 锚 v2.1.5、pkg-consistency 常量族 2.9.0→2.10.0 同候选 commit 原子切换）；persona【新项目脚手架初始化】段改写＋`presets/agent-preset.patch.yml` 再生成（D4）；使用手册 §四落位描述＋五载体原子升版 2.10.0＋phase-gate/dispatch 注释级路径（D5）。套件 540→561/0；`dispatch`/`phase-gate`/`budget` 机器层零改动，工具契约与流程语义不变。
 - **v2.9.0（2026-10-08 · TP1-首次使用引导）**：persona 新增【首次使用引导】小节（三段式：新会话首条消息秒级只读探查 → 有缺项才提示 → 按需授权补齐 → 开工门禁复查；探查零副作用，凭据只查 `configured`），`phase-gate.mjs` validateAutoMode 增开发准备门禁（fail-closed 读 `00-项目管理/开发准备.md` 固定块，无流程类型豁免），新增模板 `spec/templates/00-项目管理/开发准备.md` + 规范 v2.1.4，`t2-persona`/`t-templates`/`phase-gate-mock`/`t-spec-scan`/`v2-mechanisms` 断言同步（套件 529→540/0）；`dispatch`/`budget` 零改动，工具契约与流程语义不变。
 - **v2.8.0（2026-10-08 · TP1-对话形态纪律）**：persona 新增【对话形态纪律】小节（人读消息 answer-first / 结尾唯一下一步 / 正文分组 ≤5 / 提问纪律 / 过程消息一行制 + 不采用四项成文 + i-have-adhd 署名行），`t2-persona` 断言同步（套件 524→529/0）；机器层 `dispatch`/`phase-gate`/`budget` 零改动，工具契约与流程语义不变。
 - **v2.7.1（2026-10-02 · T3-TP1-修复1）**：两库模块补空 `apply` 空载修复组合树挂载被拒（`invalid plugin` → `never started`）；`config-check` 增本地模块行 `apply` 导出断言防回归。

@@ -63,7 +63,7 @@ export const inject = ['tools']
 
 /** 台账明细表头 v1（历史格式；用于识别并惰性升级）。 */
 const LEDGER_HEADER_V1 = '| 时间 | 环节 | 模型 | 结论 | 累计C运行 | 累计B运行 | 累计工作轮 | token用量 |'
-/** 台账明细表头 v2（与 spec/templates/03-开发协同/预算台账.md 严格一致）。 */
+/** 台账明细表头 v2（与 spec/templates/03-开发协同/_模板/预算台账.md 严格一致）。 */
 const LEDGER_HEADER_V2 = '| 时间 | 环节 | 模型 | 结论 | runId | attempt | 派工前阶段 | 结算后阶段 | candidateCommit | evidencePath | 累计C运行 | 累计B运行 | 累计工作轮 | token用量 |'
 /** v2 结论列单元格内缀状态词的定界：中文摘要照旧 +〔STATE〕。 */
 const STATE_TAG = /〔([A-Z_]+)〕/
