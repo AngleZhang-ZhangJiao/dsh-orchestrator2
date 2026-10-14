@@ -358,8 +358,11 @@ check('T2-27 TP1-D1 新小节与【对话形态纪律】切片互不越界（各
 
 // T2（02 §四）persona 字节预算断言：条款字数预算的机器护栏（此前套件无此断言，本包新增）。
 // 预算 49152 B = 48 KiB；抬升须随包修订记录显式进行（token 税纪律，04 §五-1）。
-const PERSONA_BYTE_CAP = 49152
-check('T2-21 persona prefix 字节预算 ≤ 49152（条款字数预算机器护栏）',
+// codegraph 闭环强制同步（v2.1.6）：按上述通道抬至 50176 B = 49 KiB——闭环段入 persona【阶段二】
+// 增量 ~961 B，48 KiB 顶穿（改前实测 48296 B + 961 B = 49257 B，超 105 B）；抬升依据＝用户
+// 2026-10-13 指令原文（见本包 01 需求分析）+ 包修订记录显式登记，token 税纪律不变。
+const PERSONA_BYTE_CAP = 50176
+check('T2-21 persona prefix 字节预算 ≤ 50176（条款字数预算机器护栏；v2.1.6 起 48→49 KiB）',
   Buffer.byteLength(persona, 'utf8') <= PERSONA_BYTE_CAP,
   `当前 ${Buffer.byteLength(persona, 'utf8')} B / 上限 ${PERSONA_BYTE_CAP} B`)
 
