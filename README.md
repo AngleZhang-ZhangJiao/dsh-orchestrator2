@@ -2,12 +2,13 @@
 
 > DSH agent preset 插件：单会话双态——先以调度员身份与你交互完成产品设计（并行研究员调研 → 方案 → 决策清点 → 定稿），一句确认后切换为调度引擎，goal 驱动自动推进开发流水线（审核员计划审核 → 开发员执行自测 → 审核员 AC 证据核验+代码审查 → 调度员构建），推进到「待人工测试」硬停止等你实测；验收阶段走修复循环（T0~T3 证据链）。
 >
-> **当前版本：v2.10.2**（2026-10-20 发布）　|　**相对上次发布 v2.10.1 的差异**：**DSH 0.2.1 兼容适配**——DSH 0.2.1 把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`，0.2.1 下三角色派工「点火即挂」；本版把 `role-tools.mjs` 内部启动调用适配到新 API（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留在顶层），三角色工具名/参数/返回契约（`{kind:'continuable', subagentId}`）与「先 bindChild 再启动」全部不变；测试 mock 同步并为运行期 spec 参数语义新增 4 条断言（附四项失败反例取证），套件 561→565/0；原子升版 v2.10.2（五载体 + pkg-consistency 常量族 + 生成镜像）；机器层零改动。此前 v2.10.1 为 codegraph 闭环强制同步——**每次任务完结必须更新代码图谱**成硬规则：任何任务包（含修复包）置「已完成」前，调度员在项目根机械执行 `codegraph sync`，无条件、不分内外层、改了什么就更新什么；未同步不得关闭，验收结论.md 增「codegraph 同步」记录行，关卡3 收尾兜底再同步一次（用户指令 2026-10-13）；规范升 v2.1.6（§六 新增第 7 条闭环门禁 + §六 第 4/6 条与 §2.4 挂引用，经生成器 CG-A~F 六个 op 落地、--check 逐字节校验）；persona 四处同源（A1 连跑前置 sync／新增闭环段／P2-1 修复包前置／收尾门禁 ⓪ 步）＋验收结论模板同步；原子升版（五处版本载体 + pkg-consistency 常量族同候选 commit 切换）。套件 561→561/0（断言数不变）；机器层零改动（dispatch/phase-gate/budget 零改动，不新增状态/环节/角色）。
-> **宿主要求**：建议 DSH 0.1.7-rc.2 起（0.1.7 声明式预设机制：包内 `presets/agent-preset.patch.yml` 自动生成预设声明层，无需手工处理）；v2.10.2 实测于 DSH 0.2.1（web 版与桌面版，Electron，desktop profile）　|　规范：项目目录及协同开发规范 **v2.1**（六区结构，本文档 v2.1.6）
+> **当前版本：v2.10.3**（2026-10-21 发布，DSH 版；Codex 版 v2.9.0 于 2026-10-10 首发，见「安装」节 Codex 版段）　|　**相对上次发布 v2.10.2 的差异**：**派工持久化**——v2.10.2 紧急适配（单向硬切 `startActivation`）的三个遗留洞补齐：① `role-tools.mjs` 改**双 API 能力探测**（导出纯函数 `resolveStartApi`：`startActivation` 优先、0.2.0 旧宿主自动回退 `startContinuable`，皆无则报错列出宿主实际能力键），插件在 0.2.0/0.2.1 两种宿主下都能点火；② `inspect_role_models` 输出头部新增「宿主派工能力」探测行（DSH 升级后两分钟可自查，异常降级不阻断主输出）；③ 清除死配置 `backgroundMode: continuable`（0.2.1 下本不生效的休眠配置，两 yml 全文零残留+套件防回潮断言）；④ 手册新增「DSH 升级后两分钟冒烟」节；⑤ 原子升版 v2.10.3（七件）。套件 565→574/0（+9 断言，T9 双变异打红验证）；机器层零改动（dispatch/phase-gate/budget 一行未动）。0.2.0 回退路径为套件保障、未真机实测（手册如实标注）。此前 v2.10.2 为 DSH 0.2.1 兼容适配——宿主把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`，0.2.1 下三角色派工「点火即挂」；该版把 `role-tools.mjs` 内部启动调用适配到新 API（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留在顶层），三角色工具名/参数/返回契约（`{kind:'continuable', subagentId}`）与「先 bindChild 再启动」全部不变；测试 mock 同步并为运行期 spec 参数语义新增 4 条断言（附四项失败反例取证），套件 561→565/0；原子升版 v2.10.2（五载体 + pkg-consistency 常量族 + 生成镜像）；机器层零改动。此前 v2.10.1 为 codegraph 闭环强制同步——**每次任务完结必须更新代码图谱**成硬规则：任何任务包（含修复包）置「已完成」前，调度员在项目根机械执行 `codegraph sync`，无条件、不分内外层、改了什么就更新什么；未同步不得关闭，验收结论.md 增「codegraph 同步」记录行，关卡3 收尾兜底再同步一次（用户指令 2026-10-13）；规范升 v2.1.6（§六 新增第 7 条闭环门禁 + §六 第 4/6 条与 §2.4 挂引用，经生成器 CG-A~F 六个 op 落地、--check 逐字节校验）；persona 四处同源（A1 连跑前置 sync／新增闭环段／P2-1 修复包前置／收尾门禁 ⓪ 步）＋验收结论模板同步；t2-persona 字节预算 48→49 KiB 显式抬升；原子升版（五处版本载体 + pkg-consistency 常量族同候选 commit 切换）。套件 561→561/0（断言数不变）；机器层零改动（dispatch/phase-gate/budget 零改动，不新增状态/环节/角色）。
+> **宿主要求**：建议 DSH 0.1.7-rc.2 起（0.1.7 声明式预设机制：包内 `presets/agent-preset.patch.yml` 自动生成预设声明层，无需手工处理）；v2.10.3 实测于 DSH 0.2.1（web 版与桌面版，Electron，desktop profile）　|　规范：项目目录及协同开发规范 **v2.1**（六区结构，本文档 v2.1.6）
 
-## 版本与能力速览（v2.10.2）
+## 版本与能力速览（v2.10.3）
 
-- **DSH 0.2.1 适配（v2.10.2 新增）**：宿主把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`——本版适配该调用（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留顶层），0.2.1 下三角色派工恢复；三角色工具名/参数/返回契约与「先 bindChild 再启动」不变；测试增 4 条运行期 spec 语义断言（附四项失败反例），套件 561→565/0
+- **派工持久化（v2.10.3 新增）**：子代理派工跨宿主健壮性——`resolveStartApi` 双 API 能力探测（`startActivation` 优先、0.2.0 旧宿主回退 `startContinuable`，皆无报错列实际能力键）；`inspect_role_models` 首行「宿主派工能力」自查行；死配置 `backgroundMode: continuable` 清除+防回潮断言；手册「DSH 升级后两分钟冒烟」节；套件 565→574/0
+- **DSH 0.2.1 适配（v2.10.2）**：宿主把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`——本版适配该调用（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留顶层），0.2.1 下三角色派工恢复；三角色工具名/参数/返回契约与「先 bindChild 再启动」不变；测试增 4 条运行期 spec 语义断言（附四项失败反例），套件 561→565/0
 - **codegraph 闭环强制同步（v2.10.1 新增）**：任何任务包（含修复包）置「已完成」前，调度员机械执行 `codegraph sync`（不分内外层、改了什么更新什么）；未同步不得关闭，验收结论留同步记录行；收尾兜底再同步；codegraph 不可用按降级口径如实标注，不伪造——图谱始终是最新单一事实源
 - **模板目录归集（v2.10.0）**：脚手架四区「按任务复制用」模板 21 件收进各区 `_模板/` 子文件夹，区根不再平铺混杂；三级复制源回退（项目内 `_模板/` → 旧平铺位 → 预设包 spec/templates）老项目无损；规范 v2.1.5
 - **三阶段工作流**：交互态设计（grill-me 决策清点开场问档）→ goal 驱动单包开发（一次授权多包连跑，五态流水线）→ 验收修复循环（含审核员修复审查）
@@ -42,47 +43,64 @@
 | **v2.7.1** | 2026-10-03 | T3-TP1-修复1：组合树挂载被拒修复（两纯库模块补空 `apply` 空载——cordis `registry.plugin()` 拒绝无 apply 模块 → never started → 预设挂载被拒）；config-check 新增 T3h 本地模块行 apply 导出断言（含检红夹具）防回归；注册与更新前体检双 profile（web+desktop）覆盖 |
 | **v2.8.0** | 2026-10-08 | T4 对话形态纪律（i-have-adhd 深化）：persona 新增【对话形态纪律】——人读消息 answer-first/结尾唯一下一步/首尾双问/分组 ≤5 证据全保留/时间具体单位+错误三件套；提问纪律与过程消息一行制；不采用项成文；套件 524→529/0；源码侧声明件漂移（D-J1）清偿。机器层零改动 |
 | **v2.9.0** | 2026-10-08 | 引导 首次使用引导：persona 新增【首次使用引导】（新会话首消息探查后告知缺项）＋ enter_auto_mode 开发准备门禁（fail-closed 五条件）＋ 开发准备.md 模板（规范 v2.1.4，§4.6＋§十索引 40 件）＋手册首次使用节；套件 529→540/0；D-J1 随升版清偿 |
+| **v2.9.0（Codex 版首发）** | 2026-10-10 | CDX2 Codex 自动开发调度器2.0：Codex 宿主独立实现（skill＋Node 原子状态控制器，无 MCP 服务），同步 DSH v2.9.0 能力（派工可靠性/质量证据/运行安全/预算与合并测试/模型路由/首次使用与文档纪律）；交付 `05-交付/Codex/codex-auto-development-orchestrator2-v2.9.0/`；**待用户实测验收** |
 | **v2.10.0** | 2026-10-11 | 归集/TP1-模板目录归集：四区 21 件按任务复制模板归集入各区 `_模板/` 子目录，区根只留正式文件；三级复制源回退成文（老项目不强制整改）；规范 v2.1.5（生成器 31 op，§2.2 树 + §10 索引 + 散文面指针同步）；测试六套件同步 + 21 条旧平铺位防回归断言；原子升版（五载体+常量族同 commit）；套件 540→561/0。机器层零改动 |
 | **v2.10.1** | 2026-10-13 | codegraph 闭环强制同步（用户指令）：任何任务包（含修复包）置「已完成」前调度员机械执行 `codegraph sync`——无条件、不分内外层、改了什么更新什么；验收结论增「codegraph 同步」记录行；收尾门禁 ⓪ 步兜底；不可用时降级如实标注。规范 v2.1.6（生成器 CG-A~F 六 op）；persona 四处同源 + 验收结论模板同步；套件 561→561/0；机器层零改动，不新增状态/环节/角色 |
 | **v2.10.2** | 2026-10-20 | TP1-适配DSH0.2.1：DSH 0.2.1 把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`，0.2.1 下三角色派工全挂——本版把 `role-tools.mjs` 内部启动调用适配到新 API（`delivery:'parent'`、request 去重复 label、signal 留顶层），对外契约不变；测试 mock 同步 + 4 条运行期 spec 参数语义断言与四项失败反例，套件 561→565/0；原子升版（五载体 + 常量族 + 生成镜像）；机器层零改动，不新增状态/环节/角色 |
+| **v2.10.3** | 2026-10-21 | TP2-派工持久化：v2.10.2 紧急适配的三洞持久化——① `resolveStartApi` 双 API 能力探测（startActivation 优先/0.2.0 回退 startContinuable/皆无报错列能力键）；② `inspect_role_models` 首行宿主派工能力探测行；③ 死配置 `backgroundMode: continuable` 两 yml 零残留+防回潮断言；④ 手册「DSH 升级后两分钟冒烟」节；⑤ 原子升版（七件）；套件 565→574/0（+9，T9 双变异打红）；机器层零改动；0.2.0 回退为套件保障未真机实测（手册如实标注） |
 
 ## 安装
 
-本仓库为**发布镜像**（只含最新版本）。安装包：`05-交付/安装包/dsh-orchestrator2-v2.10.2/`（或同名 zip 解压到本地目录后按目录安装）。
+本仓库含**两个宿主版本**（同一套调度器方法学的两套实现，各自独立安装、互不影响）：
+
+| 版本 | 宿主 | 安装包路径 |
+|---|---|---|
+| **DSH 版** `dsh-orchestrator2` v2.10.3 | DeepSeek Harness（web / 桌面版） | `05-交付/安装包/dsh-orchestrator2-v2.10.3/`（或同名 zip） |
+| **Codex 版** `codex-auto-development-orchestrator2` v2.9.0 | OpenAI Codex（桌面版/CLI） | `05-交付/Codex/codex-auto-development-orchestrator2-v2.9.0/codex-auto-development-orchestrator2/`（或同级同名 zip；包根须含 `.codex-plugin/plugin.json` 与 `skills/`） |
+
+### DSH 版（装到 DSH）
+
+远程仓库为**发布快照**（只含最新版本）。
 
 **web 版（`dsh web`，profile=web，CLI 一条命令）：**
 
 ```bash
-dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.10.2
+dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.10.3
 ```
 
 **桌面版（Electron，profile=desktop，由应用专属管理，CLI 写入会被拒 `managed exclusively by the Electron application`）：**
 
-1. 打开桌面版**插件管理**界面（设置 → 插件），添加/更新插件，方式选「本地目录（link）」，指向 `…/dsh-orchestrator2-v2.10.2` 包目录；
-2. 若界面不可用或需脚本化，可用**手工三件套**（操作前备份原文件）：① 改 `profiles/desktop/package.json` 的 link 依赖行指向新包目录；② 同步 `pnpm-lock.yaml` 对应两行；③ 把 `node_modules/dsh-orchestrator2` junction 重指到新包目录。
+1. 打开桌面版**插件管理**界面（设置 → 插件），添加/更新插件，方式选「本地目录（link）」，指向 `…/dsh-orchestrator2-v2.10.3` 包目录；
+2. 若界面不可用或需脚本化：参照 `05-交付/T3-TP1-子代理模型路由与会话覆盖/构建记录-20261002.md` §八 的**手工三件套**——改 `profiles/desktop/package.json` 的 link 依赖行 + `pnpm-lock.yaml` 两行 + `node_modules/dsh-orchestrator2` junction 重指（操作前备份原文件；本仓库 v2.10.0/v2.10.1/v2.10.2/v2.10.3 桌面版即以此方式装机）。
 
-**两端通用**：装完**完全退出并重启**（桌面版注意先退出托盘进程，避免旧实例占端口）；新建会话在预设选择器选「自动开发调度器2.0」。重启前建议体检：`node "$env:APPDATA\npm\node_modules\@deepseek-ai\dsh\lib\bin.js" web --dump-config`——① 组合树含 `preset-orchestrator2`；② 零死引用；③ 注册指向新包。详见包根 `测试入口说明.md` 与包内 `presets/orchestrator2/docs/使用手册.md`。
+**两端通用**：装完**完全退出并重启**（桌面版注意先退出托盘进程，避免旧实例占端口）；新建会话在预设选择器选「自动开发调度器2.0」。重启前建议体检：`node "$env:APPDATA\npm\node_modules\@deepseek-ai\dsh\lib\bin.js" web --dump-config`——① 组合树含 `preset-orchestrator2`；② 零死引用；③ 注册指向新包。详见包根 `测试入口说明.md` 与 `presets/orchestrator2/docs/使用手册.md`。
 
 > 注：0.1.7 起预设走声明式机制（包内 `presets/agent-preset.patch.yml` 在宿主启动时自动把预设声明进组合树）；旧版「裸目录拷贝到 `~/.dsh/.agent-presets`」方式已随 0.1.7 移除，勿再用。
 
-## 仓库结构（发布镜像：源码 + 最新交付物 + 安装位子包）
+### Codex 版（装到 Codex）
 
-| 路径 | 内容 |
+1. 把交付包内层目录 `codex-auto-development-orchestrator2-v2.9.0/codex-auto-development-orchestrator2/`（或 zip 解压后的同名目录）复制为个人插件目录 `%USERPROFILE%\plugins\codex-auto-development-orchestrator2\`；
+2. 在 Codex 桌面版**插件管理**中启用（UI 名「自动开发调度器 · Codex 版」，插件 ID `codex-auto-development-orchestrator2@personal`）；与旧插件 `codex-auto-development-flow` 不互相覆盖，试用期只启用一个 Codex 调度器；
+3. 重启 Codex，新会话输入 `$codex-auto-development` 触发；用法见包内 `skills/codex-auto-development/SKILL.md` 与 `docs/人工测试指南.md`；可选角色模板在 `templates/agents/`（复制到项目 `.codex/agents/` 使用，勿整目录覆盖）。
+
+> Codex 版 2.9.0 于 2026-10-10 首发（同步 DSH v2.9.0 能力：派工可靠性/质量证据/运行安全/预算/模型路由/首次使用与文档纪律），**当前待用户实测验收**——版本号不表示验收已通过（验收状态见 `03-开发协同/CDX2-Codex自动开发调度器2.0/状态.md`）。
+
+## 仓库结构（规范 v2.1 六区）
+
+| 目录 | 内容 |
 |---|---|
-| `02-代码/orchestrator2/` | 2.0 预设工程**源码**：persona（agent.cordis.yml）/ 规范 v2.1 与 40 件模板（四区按任务模板收 `_模板/` 子目录）/ dispatch.mjs 机器层 / model-routes 等路由四模块 / tests 回归套件（565 断言） |
-| `05-交付/安装包/dsh-orchestrator2-v2.10.2/` | 当前安装包（61 件：presets/spec/lib/docs + 测试入口说明 + LICENSE + package.json） |
-| `05-交付/安装包/dsh-orchestrator2-v2.10.2.zip` | 同名压缩包（下载即用） |
-| `plugins/dsh-orchestrator2/` | **安装位子包**（不带版本号，随发版原地刷新）：`dsh plugin add` 源码安装与插件市场（dsh-market）从这里装，内容为当前安装包镜像 |
+| `00-项目管理/` | 治理规范本体（v2.1.5）、当前状态、预算基线等 |
+| `01-设计/` | 设计文档（每系列只留最新版）：DSH2.0 设计方案 v1.7、v2.1 目录体系/场景扩展、superpowers 调研与借鉴（v1.1）、SP 借鉴落地定稿与任务包、运行安全定稿与任务包、跨项目复盘沉淀定稿与 TP-D1/TP-D2 任务包、外部借鉴落地（TP1/TP2）、**子代理模型路由与会话覆盖（T3）**、技术调研（TR1/TR2）、首次使用引导、Codex2.0 方案 v0.2 |
+| `02-代码/` | `orchestrator2/`（DSH 版 2.0 预设工程：persona/规范/模板/dispatch.mjs 机器层 + **model-routes/session-routes/role-tools/route-fallback 路由四模块**/tests 回归套件）+ `orchestrator/`（1.0 预设）+ `codex-auto-development-orchestrator2/`（**Codex 版**插件源码：`.codex-plugin/`+skills+Node 状态控制器+templates+tests） |
+| `03-开发协同/` | 开发过程记录：各任务包状态/计划评审/执行自测/代码审查/预算台账/决策记录（T1→PD→T2→SP→运行安全→跨项目复盘沉淀→借鉴2→**T3 系列**→引导 全程；CDX2 为 Codex 版协同目录） |
+| `04-测试/` | 验收结论（含债务清单与 AC 核验证据） |
+| `05-交付/` | 安装包（DSH 版**当前 v2.10.3**）、**Codex 版交付（`Codex/`，当前 v2.9.0 首发）**、构建/部署/推送记录、操作手册 |
 
-> 设计文档、开发过程记录、历史版本安装包与本地开发历史不在本镜像（发布口径）。规范 v2.1 六区结构中的其余各区（00 项目管理/01 设计/03 开发协同/04 测试）属开发侧材料，不公开发布。
+> 历史资料与旧版本不在本远程仓库（发布口径：不含历史版本/原型/内部文档）；本地开发历史同理不推。
 
 ## 文档入口
 
-- 使用手册（最新）：`05-交付/安装包/dsh-orchestrator2-v2.10.2/presets/orchestrator2/docs/使用手册.md`
-- 协同开发规范 v2.1：`02-代码/orchestrator2/spec/项目目录及协同开发规范-v2.1.md`
-- 插件工程说明：`02-代码/orchestrator2/README.md`
-- 安装后实测指引：`05-交付/安装包/dsh-orchestrator2-v2.10.2/测试入口说明.md`
-
-## License
-
-MIT（许可文本见 `plugins/dsh-orchestrator2/LICENSE`）。本插件 persona 含两处外部形状借鉴并已注明出处：ponytail（MIT, © 2026 DietrichGebert，最小实现七档阶梯）、i-have-adhd（MIT, © 2026 Ayoub Ghriss，对话形态纪律）。
+- 使用手册（最新）：`05-交付/安装包/dsh-orchestrator2-v2.10.3/presets/orchestrator2/docs/使用手册.md`
+- 协同开发规范 v2.1：`00-项目管理/项目目录及协同开发规范.md`
+- 项目看板（任务全景）：`项目看板.md`
+- 最新构建与体检：`05-交付/TP2-派工持久化/构建记录-20261020.md`（v2.10.3 构建：套件 574/0、全树 diff 恰 9 件预期差异、AC4 手册三副本哈希一致、pkg-consistency 12/0、双 profile 三处同改）；上一构建：`05-交付/TP1-适配DSH0.2.1/构建记录-20261020.md`（v2.10.2，套件 565/0）

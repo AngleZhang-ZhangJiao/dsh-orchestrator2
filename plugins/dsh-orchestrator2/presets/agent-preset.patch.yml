@@ -160,8 +160,17 @@
           # 05-交付 3），区根只落正式文件与目录骨架；补复制源回退顺序句（项目内 `_模板/` → 旧平铺位 →
           # 预设包 spec/templates/，与规范 §10 兼容回退口径句、使用手册同源）；**D2** 页首注释加本包条目。
           # 机器层零改动（phase-gate/dispatch/budget 均不读区根模板平铺路径），工具契约不变。
-          # 当前发布版本：2.10.2（2026-10-20 DSH 0.2.1 适配升版——packaging.json / lib banner / 使用手册页首 /
-          # README / 本行 五处同一候选 commit 原子切换；pkg-consistency 常量族随版本同步）。
+          # TP2-派工持久化（shim + 死配置清理，2026-10-20；版本 2.10.3）：**D1** delegation 组
+          # tool-subagent 行删休眠背景模式配置项（0.2.1 宿主该字段有休眠语义风险，三角色派工走
+          # ./role-tools.mjs 自持 shim、裸 subagent 仅应急；防回潮=config-check 新增「两 yml 零该
+          # 字段」断言 + 夹具检红演算）；**D2** role-tools.mjs 增 resolveStartApi 双 API
+          # 能力探测 shim（startActivation 优先 / startContinuable 回退 / 皆无报错列实际能力键）+
+          # inspect_role_models 首行「宿主派工能力」探测行（try/catch 降级不阻断主输出）。
+          # **版本五处同步**：packaging.json / lib banner / 使用手册页首 / README 当前版本行 / 本注释行。
+          # persona 与流程语义不变；dispatch/phase-gate/budget 机器层零改动。
+          # 当前发布版本：2.10.3（2026-10-20 TP2-派工持久化升版——packaging.json / lib banner / 使用手册页首 /
+          # README / 本行 五处同一候选 commit 原子切换；pkg-consistency 常量族随版本同步；上游 2.10.2 为
+          # TP1-适配DSH0.2.1 宿主 startActivation 硬切适配）。
           #
           # This file is an AGENT-PLANE composition. The roster mounts it ONCE under a
           # standing scope; every session naming it joins by scope parentage, so the
@@ -494,7 +503,7 @@
                 config:
                   provider: spawn
                   toolName: subagent
-                  backgroundMode: continuable
+                  # TP2-派工持久化：休眠背景模式配置项已删（防回潮=config-check 断言 + 检红演算）。
 
               # T3-TP1：官方三行 tool-subagent-researcher/reviewer/developer 已删除（同名替换为
               # ./role-tools.mjs 内的自持工具，避免同层重名抛错）。四件本地模块的装载形态与

@@ -7,7 +7,9 @@
  * 与原请求一致——F-2 修订新增，别于「只把 mock 方法改名」）、
  * 返回契约 {kind:'continuable', subagentId}、schema 顶层无 provider/model/reasoning_effort、
  * 主调度会话限定（子代理不可调）、一次性覆盖提示且不落状态、永久槽位即时生效 + 未改槽位不变 +
- * 显式覆盖优先 + 在跑 child 不变、保存失败注入无成功回执。
+ * 显式覆盖优先 + 在跑 child 不变、保存失败注入无成功回执；
+ * TP2 · D3 新增（AC1/AC2）：resolveStartApi 三路径（顺序锁死 / 0.2.0 旧契约回退 / 皆无报错文案）、
+ * inspect 首行能力探测（双能力 ✓ 呈现 + 探测异常降级不阻断主输出）。
  */
 import { mkdirSync, mkdtempSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
@@ -21,7 +23,7 @@ const SESSION_MOD = new URL('../../session-routes.mjs', import.meta.url).href
 const ROUTES_MOD = new URL('../../model-routes.mjs', import.meta.url).href
 const {
   apply, registerRoleDispatchTools, registerModelSettingTools, ROLE_TOOLS: ROLE_TOOL_NAMES,
-  assertMainScheduler, resolveDispatchSnapshot, routeToAgentOptions,
+  assertMainScheduler, resolveDispatchSnapshot, routeToAgentOptions, resolveStartApi,
 } = await import(ROLE_TOOLS)
 const { loadSessionState, sessionPath } = await import(SESSION_MOD)
 const { loadRoleRoutes, routesPath, tempPathFor, ROUTE_INIT } = await import(ROUTES_MOD)
@@ -223,6 +225,90 @@ check('AC15-8 assertMainScheduler 对主会话返回其 session id',
 let foregroundRejected = false
 try { await registered.get('subagent_researcher').execute({ description: 'd', prompt: 'p', run_in_background: false }, exec) } catch { foregroundRejected = true }
 check('边界-1 run_in_background:false 显式报错（前景派工未实现，不静默改语义）', foregroundRejected, '抛错')
+
+// ── TP2 · D3（AC1/AC2）：双 API shim 三路径 + inspect 能力探测行 ────────────────
+// 断言① 顺序锁死（T9 变异反例：颠倒探测顺序必打红本断言——见执行自测 T9）；
+// 断言② 回退走 0.2.0 旧契约（request 拥有 label、顶层无 delivery——属性存在性检查，
+//       mock 勿照抄现行 startActivation 形态，差异锚点见计划评审提示 3）；
+// 断言③ 皆无时报错文案含两探测 API 名与实际能力键清单。
+check('AC1-1 双能力在场时 shim 选 startActivation（探测顺序锁死）；仅回退在场选 startContinuable',
+  resolveStartApi({ startActivation: async () => {}, startContinuable: async () => {} }).name === 'startActivation' &&
+  resolveStartApi({ startContinuable: async () => {} }).name === 'startContinuable',
+  '双能力→startActivation；仅回退→startContinuable')
+
+// ② 仅 startContinuable 在场：三角色 execute 回退成功，调用形态为旧契约
+// （独立会话 ID 隔离 bindChild 写入，不污染主会话 children 计数——AC14-2 断言 2 个）
+const FALLBACK_SESSION = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+const fallbackExec = { agent: { id: FALLBACK_SESSION, session: { id: FALLBACK_SESSION, header: { cwd: ORCH2 } } }, signal: exec.signal }
+const fallbackRegistry = new Map()
+const fallbackCalls = []
+const fallbackCtx = {
+  tools: { register(def) { fallbackRegistry.set(def.name, def); return () => fallbackRegistry.delete(def.name) } },
+  subagents: {
+    async startContinuable(spec) { fallbackCalls.push(spec); return { childId: spec.childId } },
+    resolveMaxDepth: () => undefined,
+  },
+  effect: (fn) => { fn() },
+}
+registerRoleDispatchTools(fallbackCtx, { home })
+const fallbackResult = await fallbackRegistry.get('subagent_developer').execute(
+  { description: '旧宿主派工', prompt: 'p-fallback' }, fallbackExec)
+const fb = fallbackCalls[0] ?? {}
+check('AC1-2 仅 startContinuable 在场：execute 回退成功且返回契约不变 {kind,subagentId}',
+  fallbackCalls.length === 1 && fallbackResult.kind === 'continuable' &&
+  fallbackResult.subagentId === fb.childId && typeof fallbackResult.subagentId === 'string',
+  JSON.stringify(fallbackResult))
+check('AC1-2b 回退调用为 0.2.0 旧契约：request 拥有 label=description；顶层与 request 均无 delivery',
+  ownsKey(fb.request ?? {}, 'label') === true && fb.request?.label === '旧宿主派工' &&
+  ownsKey(fb, 'delivery') === false && ownsKey(fb.request ?? {}, 'delivery') === false,
+  `request 自有键=[${Object.keys(fb.request ?? {}).join(',')}]；顶层自有键=[${Object.keys(fb).join(',')}]`)
+
+// ③ 皆无能力：抛错文案含两探测 API 名与实际能力键清单
+let neitherError = ''
+try { resolveStartApi({ listAgents: () => {}, sendMessage: () => {} }) } catch (e) { neitherError = e.message }
+check('AC1-3 皆无能力时抛错文案含 startActivation / startContinuable 与实际能力键清单',
+  neitherError.includes('startActivation') && neitherError.includes('startContinuable') &&
+  neitherError.includes('实际能力键') && neitherError.includes('listAgents') && neitherError.includes('sendMessage'),
+  neitherError.slice(0, 130))
+
+// ④ 双能力 mock 下 inspect 首行能力探测呈现（resolveStartApi 与派工同一份探测）
+const dualRegistry = new Map()
+const dualCtx = {
+  tools: { register(def) { dualRegistry.set(def.name, def); return () => dualRegistry.delete(def.name) } },
+  subagents: {
+    async startActivation(spec) { return { childId: spec.childId } },
+    async startContinuable(spec) { return { childId: spec.childId } },
+  },
+  effect: (fn) => { fn() },
+}
+registerModelSettingTools(dualCtx, { home })
+const dualInspect = await dualRegistry.get('inspect_role_models').execute({}, exec)
+const dualLines = dualInspect.message.split('\n')
+check('AC2-1 inspect 首行=宿主派工能力行（双能力 mock：两 ✓ + 生效路径=startActivation）',
+  dualInspect.ok === true &&
+  dualLines[0] === '宿主派工能力：startActivation ✓；startContinuable ✓；生效路径=startActivation',
+  dualLines[0])
+check('AC2-2 能力行不阻断主输出（路由头行降为第二行、内容不变）',
+  dualLines[1].startsWith('角色模型路由（持久配置：') && dualInspect.message.includes('当前生效='),
+  dualLines[1].slice(0, 48))
+
+// ⑤ 探测抛错（getter 抛异常模拟注册表损坏）：首行降级文案 + 主输出仍在
+const throwRegistry = new Map()
+const throwCtx = {
+  tools: { register(def) { throwRegistry.set(def.name, def); return () => throwRegistry.delete(def.name) } },
+  subagents: {
+    get startActivation() { throw new Error('subagents 注册表损坏') },
+  },
+  effect: (fn) => { fn() },
+}
+registerModelSettingTools(throwCtx, { home })
+const throwInspect = await throwRegistry.get('inspect_role_models').execute({}, exec)
+const throwLines = throwInspect.message.split('\n')
+check('AC2-3 inspect 探测异常降级：首行为「探测失败（原因）」且主输出仍在',
+  throwInspect.ok === true &&
+  throwLines[0] === '宿主派工能力：探测失败（subagents 注册表损坏）' &&
+  throwLines[1].startsWith('角色模型路由（持久配置：'),
+  throwLines[0])
 
 // ── AC14：机器层零改动（派工计次/锁/枚举文件不引用新模块） ──────────────────────
 const untouched = ['dispatch.mjs', 'phase-gate.mjs', 'budget.mjs']

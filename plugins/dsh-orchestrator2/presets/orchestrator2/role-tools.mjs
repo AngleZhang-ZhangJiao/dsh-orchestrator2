@@ -12,6 +12,10 @@
  * 嵌套 `route` 对象（顶层无 provider/model/reasoning_effort 三字段，规避宿主 invariant，
  * H/dsh-tool-subagent/lib/invariant.js:34-43），工具名不用 `list_subagent_models`。
  *
+ * TP2-派工持久化（v2.10.3）：派工启动改走 `resolveStartApi` 双 API 能力探测 shim
+ * （startActivation 优先 / startContinuable 回退 / 皆无报错列实际能力键）；inspect 首行
+ * 增「宿主派工能力」探测行（try/catch 降级，不阻断主输出）。对外契约不变。
+ *
  * ponytail: 首版只支持后台 continuable（官方行的 `run_in_background` 参数保留、缺省 true）；
  * 传 false 显式报错而不是静默改语义（前景派工未实现）。升级触发 = persona 需要前景派工。
  */
@@ -117,6 +121,20 @@ export function resolveDispatchSnapshot(role, sessionId, home) {
 }
 
 /**
+ * 宿主派工能力探测（TP2 · D1 双 API shim）：startActivation 优先（宿主 0.2.1 现行），
+ * startContinuable 回退（宿主 0.2.0 旧契约）；皆无抛错且列出实际能力键清单。
+ * ponytail: 纯函数两分支顺序探测，不引能力协商框架；升级触发 = 宿主再新增/更名启动 API。
+ * @param {object} subagents - cordis 子代理注册表（ctx.subagents）。
+ * @returns {{name: 'startActivation'|'startContinuable'}} 生效启动 API 名。
+ */
+export function resolveStartApi(subagents) {
+  if (typeof subagents?.startActivation === 'function') return { name: 'startActivation' }
+  if (typeof subagents?.startContinuable === 'function') return { name: 'startContinuable' }
+  const keys = Object.keys(subagents ?? {}).filter((k) => typeof subagents[k] === 'function')
+  throw new Error(`宿主派工能力缺失：已探测 startActivation / startContinuable 均不可用；ctx.subagents 实际能力键=[${keys.join(', ')}]`)
+}
+
+/**
  * 建三条同名角色工具（execute 内：现读配置+会话状态 → 解析路由 → 先 bind 再 startActivation）。
  * @param {object} ctx - cordis 上下文（需 ctx.tools）。
  * @param {{home?: string}} [options] - home 覆盖（测试注入）。
@@ -141,9 +159,7 @@ export function registerRoleDispatchTools(ctx, options = {}) {
           throw new Error(`${toolName}：首版仅支持后台 continuable 派工（run_in_background 缺省 true）`)
         }
         const subagents = ctx.subagents
-        if (subagents === undefined || typeof subagents.startActivation !== 'function') {
-          throw new Error(`${toolName}：子代理注册表不可用（ctx.subagents.startActivation 缺失）`)
-        }
+        const startApi = resolveStartApi(subagents)
         const home = options.home ?? resolveDshHome()
         const snapshot = resolveDispatchSnapshot(role, sessionId, home)
         const childId = randomUUID()
@@ -158,19 +174,31 @@ export function registerRoleDispatchTools(ctx, options = {}) {
           degraded: false,
         }, { home, sessionId })
         const maxDepth = typeof subagents.resolveMaxDepth === 'function' ? subagents.resolveMaxDepth(undefined) : undefined
-        const started = await subagents.startActivation({
-          provider: SPAWN_PROVIDER,
-          label: args.description,
-          childId,
-          request: {
-            prompt: [{ type: 'text', text: args.prompt }],
-            parent,
-            agentOptions: routeToAgentOptions(snapshot.route),
-            ...maxDepth === undefined ? {} : { maxDepth },
-          },
-          signal: exec.signal,
-          delivery: 'parent',
-        })
+        const request = {
+          prompt: [{ type: 'text', text: args.prompt }],
+          parent,
+          agentOptions: routeToAgentOptions(snapshot.route),
+          ...maxDepth === undefined ? {} : { maxDepth },
+        }
+        // TP2 · D1：双 API shim——startActivation 走现行 2.10.2 调用形态（request 无 label、
+        // 顶层 delivery:'parent'）；startContinuable 按宿主 0.2.0 旧契约（request 拥有 label、
+        // 顶层无 delivery——v2.10.1 生产形态）。返回契约两路一致。
+        const started = startApi.name === 'startContinuable'
+          ? await subagents.startContinuable({
+              provider: SPAWN_PROVIDER,
+              label: args.description,
+              childId,
+              request: { label: args.description, ...request },
+              signal: exec.signal,
+            })
+          : await subagents.startActivation({
+              provider: SPAWN_PROVIDER,
+              label: args.description,
+              childId,
+              request,
+              signal: exec.signal,
+              delivery: 'parent',
+            })
         return { kind: 'continuable', subagentId: started.childId }
       },
       presentCall: (args) => ({
@@ -321,7 +349,18 @@ export function registerModelSettingTools(ctx, options = {}) {
       try {
         const config = loadRoleRoutes({ home })
         const state = loadSessionState(sessionId, { home })
-        const lines = [`角色模型路由（持久配置：<DSH_HOME>/orchestrator2/model-routes.json；会话状态：sessions/${sessionId}.json）`]
+        // TP2 · D2：首行=宿主派工能力探测（resolveStartApi 与派工同一份探测逻辑）；
+        // 探测整体 try/catch 降级，永不阻断下方既有路由输出。
+        let capabilityLine
+        try {
+          const subagents = ctx.subagents
+          const hasActivation = typeof subagents?.startActivation === 'function'
+          const hasContinuable = typeof subagents?.startContinuable === 'function'
+          capabilityLine = `宿主派工能力：startActivation ${hasActivation ? '✓' : '✗'}；startContinuable ${hasContinuable ? '✓' : '✗'}；生效路径=${resolveStartApi(subagents).name}`
+        } catch (error) {
+          capabilityLine = `宿主派工能力：探测失败（${error instanceof Error ? error.message : String(error)}）`
+        }
+        const lines = [capabilityLine, `角色模型路由（持久配置：<DSH_HOME>/orchestrator2/model-routes.json；会话状态：sessions/${sessionId}.json）`]
         for (const role of ROLES) {
           const roleState = state.roles[role]
           const children = Object.entries(state.children).filter(([, c]) => c.role === role)

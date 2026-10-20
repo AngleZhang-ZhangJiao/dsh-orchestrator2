@@ -279,4 +279,20 @@ const pairFixture = yaml.load(
 check('T3g-演算 缺引擎行夹具必须检红（门禁自身可信）', hasWorkflowPair(pairFixture) === false,
   `夹具含消费方不含 workflow-ptc → 配对=${hasWorkflowPair(pairFixture)}`)
 
+// ── T3i（TP2 · D4③）：死配置防回潮门禁——两 yml 零 backgroundMode ──────────────
+// 事故口径：tool-subagent 行的休眠背景模式配置项（0.2.1 宿主该字段有休眠语义风险）已删；
+// 若任何一侧再出现该字段（含注释，TP-D2 T3a-2 同款全文口径）本断言必红。检红演算内联。
+const patchText = readFileSync(join(ORCH2, 'presets', 'agent-preset.patch.yml'), 'utf8')
+const hasDeadConfig = (text) => text.includes('backgroundMode')
+check('T3i 两 yml 零 backgroundMode（agent.cordis.yml + presets/agent-preset.patch.yml；TP2-D4 防回潮）',
+  !hasDeadConfig(cordisText) && !hasDeadConfig(patchText),
+  `cordis 命中=${hasDeadConfig(cordisText)} patch 命中=${hasDeadConfig(patchText)}`)
+// 检红演算：同款扫描跑在「注入该字段」的夹具上必须检红、跑在真文件上必须检绿。
+const bgInjectedCordis = cordisText + '\n        backgroundMode: continuable\n'
+const bgInjectedPatch = patchText + '\n                  backgroundMode: continuable\n'
+check('T3i-演算 注入夹具必检红 + 真文件检绿（门禁自身可信可复算）',
+  hasDeadConfig(bgInjectedCordis) === true && hasDeadConfig(bgInjectedPatch) === true &&
+  hasDeadConfig(cordisText) === false && hasDeadConfig(patchText) === false,
+  `夹具命中=${hasDeadConfig(bgInjectedCordis)}/${hasDeadConfig(bgInjectedPatch)} 真文件=${hasDeadConfig(cordisText)}/${hasDeadConfig(patchText)}`)
+
 writeResult()
