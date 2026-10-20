@@ -2,11 +2,12 @@
 
 > DSH agent preset 插件：单会话双态——先以调度员身份与你交互完成产品设计（并行研究员调研 → 方案 → 决策清点 → 定稿），一句确认后切换为调度引擎，goal 驱动自动推进开发流水线（审核员计划审核 → 开发员执行自测 → 审核员 AC 证据核验+代码审查 → 调度员构建），推进到「待人工测试」硬停止等你实测；验收阶段走修复循环（T0~T3 证据链）。
 >
-> **当前版本：v2.10.1**（2026-10-13 发布）　|　**相对上版 v2.10.0 的差异**：codegraph 闭环强制同步——**每次任务完结必须更新代码图谱**成硬规则：任何任务包（含修复包）置「已完成」前，调度员在项目根机械执行 `codegraph sync`，无条件、不分内外层、改了什么就更新什么；未同步不得关闭，验收结论.md 增「codegraph 同步」记录行，关卡3 收尾兜底再同步一次（用户指令 2026-10-13）；规范升 v2.1.6（§六 新增第 7 条闭环门禁 + §六 第 4/6 条与 §2.4 挂引用，经生成器 CG-A~F 六个 op 落地、--check 逐字节校验）；persona 四处同源（A1 连跑前置 sync／新增闭环段／P2-1 修复包前置／收尾门禁 ⓪ 步）＋验收结论模板同步；原子升版（五处版本载体 + pkg-consistency 常量族同候选 commit 切换）。套件 561→561/0（断言数不变）；机器层零改动（dispatch/phase-gate/budget 零改动，不新增状态/环节/角色）。
-> **宿主要求**：建议 DSH 0.1.7-rc.2 起（0.1.7 声明式预设机制：包内 `presets/agent-preset.patch.yml` 自动生成预设声明层，无需手工处理）；v2.10.1 实测于 DSH web 版与桌面版（Electron，desktop profile）　|　规范：项目目录及协同开发规范 **v2.1**（六区结构，本文档 v2.1.6）
+> **当前版本：v2.10.2**（2026-10-20 发布）　|　**相对上次发布 v2.10.1 的差异**：**DSH 0.2.1 兼容适配**——DSH 0.2.1 把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`，0.2.1 下三角色派工「点火即挂」；本版把 `role-tools.mjs` 内部启动调用适配到新 API（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留在顶层），三角色工具名/参数/返回契约（`{kind:'continuable', subagentId}`）与「先 bindChild 再启动」全部不变；测试 mock 同步并为运行期 spec 参数语义新增 4 条断言（附四项失败反例取证），套件 561→565/0；原子升版 v2.10.2（五载体 + pkg-consistency 常量族 + 生成镜像）；机器层零改动。此前 v2.10.1 为 codegraph 闭环强制同步——**每次任务完结必须更新代码图谱**成硬规则：任何任务包（含修复包）置「已完成」前，调度员在项目根机械执行 `codegraph sync`，无条件、不分内外层、改了什么就更新什么；未同步不得关闭，验收结论.md 增「codegraph 同步」记录行，关卡3 收尾兜底再同步一次（用户指令 2026-10-13）；规范升 v2.1.6（§六 新增第 7 条闭环门禁 + §六 第 4/6 条与 §2.4 挂引用，经生成器 CG-A~F 六个 op 落地、--check 逐字节校验）；persona 四处同源（A1 连跑前置 sync／新增闭环段／P2-1 修复包前置／收尾门禁 ⓪ 步）＋验收结论模板同步；原子升版（五处版本载体 + pkg-consistency 常量族同候选 commit 切换）。套件 561→561/0（断言数不变）；机器层零改动（dispatch/phase-gate/budget 零改动，不新增状态/环节/角色）。
+> **宿主要求**：建议 DSH 0.1.7-rc.2 起（0.1.7 声明式预设机制：包内 `presets/agent-preset.patch.yml` 自动生成预设声明层，无需手工处理）；v2.10.2 实测于 DSH 0.2.1（web 版与桌面版，Electron，desktop profile）　|　规范：项目目录及协同开发规范 **v2.1**（六区结构，本文档 v2.1.6）
 
-## 版本与能力速览（v2.10.1）
+## 版本与能力速览（v2.10.2）
 
+- **DSH 0.2.1 适配（v2.10.2 新增）**：宿主把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`——本版适配该调用（spec 顶层 `delivery:'parent'`、request 去重复 `label`、`signal` 留顶层），0.2.1 下三角色派工恢复；三角色工具名/参数/返回契约与「先 bindChild 再启动」不变；测试增 4 条运行期 spec 语义断言（附四项失败反例），套件 561→565/0
 - **codegraph 闭环强制同步（v2.10.1 新增）**：任何任务包（含修复包）置「已完成」前，调度员机械执行 `codegraph sync`（不分内外层、改了什么更新什么）；未同步不得关闭，验收结论留同步记录行；收尾兜底再同步；codegraph 不可用按降级口径如实标注，不伪造——图谱始终是最新单一事实源
 - **模板目录归集（v2.10.0）**：脚手架四区「按任务复制用」模板 21 件收进各区 `_模板/` 子文件夹，区根不再平铺混杂；三级复制源回退（项目内 `_模板/` → 旧平铺位 → 预设包 spec/templates）老项目无损；规范 v2.1.5
 - **三阶段工作流**：交互态设计（grill-me 决策清点开场问档）→ goal 驱动单包开发（一次授权多包连跑，五态流水线）→ 验收修复循环（含审核员修复审查）
@@ -43,20 +44,21 @@
 | **v2.9.0** | 2026-10-08 | 引导 首次使用引导：persona 新增【首次使用引导】（新会话首消息探查后告知缺项）＋ enter_auto_mode 开发准备门禁（fail-closed 五条件）＋ 开发准备.md 模板（规范 v2.1.4，§4.6＋§十索引 40 件）＋手册首次使用节；套件 529→540/0；D-J1 随升版清偿 |
 | **v2.10.0** | 2026-10-11 | 归集/TP1-模板目录归集：四区 21 件按任务复制模板归集入各区 `_模板/` 子目录，区根只留正式文件；三级复制源回退成文（老项目不强制整改）；规范 v2.1.5（生成器 31 op，§2.2 树 + §10 索引 + 散文面指针同步）；测试六套件同步 + 21 条旧平铺位防回归断言；原子升版（五载体+常量族同 commit）；套件 540→561/0。机器层零改动 |
 | **v2.10.1** | 2026-10-13 | codegraph 闭环强制同步（用户指令）：任何任务包（含修复包）置「已完成」前调度员机械执行 `codegraph sync`——无条件、不分内外层、改了什么更新什么；验收结论增「codegraph 同步」记录行；收尾门禁 ⓪ 步兜底；不可用时降级如实标注。规范 v2.1.6（生成器 CG-A~F 六 op）；persona 四处同源 + 验收结论模板同步；套件 561→561/0；机器层零改动，不新增状态/环节/角色 |
+| **v2.10.2** | 2026-10-20 | TP1-适配DSH0.2.1：DSH 0.2.1 把子代理启动 API 由 `ctx.subagents.startContinuable` 重构为 `startActivation`，0.2.1 下三角色派工全挂——本版把 `role-tools.mjs` 内部启动调用适配到新 API（`delivery:'parent'`、request 去重复 label、signal 留顶层），对外契约不变；测试 mock 同步 + 4 条运行期 spec 参数语义断言与四项失败反例，套件 561→565/0；原子升版（五载体 + 常量族 + 生成镜像）；机器层零改动，不新增状态/环节/角色 |
 
 ## 安装
 
-本仓库为**发布镜像**（只含最新版本）。安装包：`05-交付/安装包/dsh-orchestrator2-v2.10.1/`（或同名 zip 解压到本地目录后按目录安装）。
+本仓库为**发布镜像**（只含最新版本）。安装包：`05-交付/安装包/dsh-orchestrator2-v2.10.2/`（或同名 zip 解压到本地目录后按目录安装）。
 
 **web 版（`dsh web`，profile=web，CLI 一条命令）：**
 
 ```bash
-dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.10.1
+dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.10.2
 ```
 
 **桌面版（Electron，profile=desktop，由应用专属管理，CLI 写入会被拒 `managed exclusively by the Electron application`）：**
 
-1. 打开桌面版**插件管理**界面（设置 → 插件），添加/更新插件，方式选「本地目录（link）」，指向 `…/dsh-orchestrator2-v2.10.1` 包目录；
+1. 打开桌面版**插件管理**界面（设置 → 插件），添加/更新插件，方式选「本地目录（link）」，指向 `…/dsh-orchestrator2-v2.10.2` 包目录；
 2. 若界面不可用或需脚本化，可用**手工三件套**（操作前备份原文件）：① 改 `profiles/desktop/package.json` 的 link 依赖行指向新包目录；② 同步 `pnpm-lock.yaml` 对应两行；③ 把 `node_modules/dsh-orchestrator2` junction 重指到新包目录。
 
 **两端通用**：装完**完全退出并重启**（桌面版注意先退出托盘进程，避免旧实例占端口）；新建会话在预设选择器选「自动开发调度器2.0」。重启前建议体检：`node "$env:APPDATA\npm\node_modules\@deepseek-ai\dsh\lib\bin.js" web --dump-config`——① 组合树含 `preset-orchestrator2`；② 零死引用；③ 注册指向新包。详见包根 `测试入口说明.md` 与包内 `presets/orchestrator2/docs/使用手册.md`。
@@ -67,19 +69,19 @@ dsh plugin --profile web add link:/路径/dsh-orchestrator2-v2.10.1
 
 | 路径 | 内容 |
 |---|---|
-| `02-代码/orchestrator2/` | 2.0 预设工程**源码**：persona（agent.cordis.yml）/ 规范 v2.1 与 40 件模板（四区按任务模板收 `_模板/` 子目录）/ dispatch.mjs 机器层 / model-routes 等路由四模块 / tests 回归套件（561 断言） |
-| `05-交付/安装包/dsh-orchestrator2-v2.10.1/` | 当前安装包（61 件：presets/spec/lib/docs + 测试入口说明 + LICENSE + package.json） |
-| `05-交付/安装包/dsh-orchestrator2-v2.10.1.zip` | 同名压缩包（下载即用） |
+| `02-代码/orchestrator2/` | 2.0 预设工程**源码**：persona（agent.cordis.yml）/ 规范 v2.1 与 40 件模板（四区按任务模板收 `_模板/` 子目录）/ dispatch.mjs 机器层 / model-routes 等路由四模块 / tests 回归套件（565 断言） |
+| `05-交付/安装包/dsh-orchestrator2-v2.10.2/` | 当前安装包（61 件：presets/spec/lib/docs + 测试入口说明 + LICENSE + package.json） |
+| `05-交付/安装包/dsh-orchestrator2-v2.10.2.zip` | 同名压缩包（下载即用） |
 | `plugins/dsh-orchestrator2/` | **安装位子包**（不带版本号，随发版原地刷新）：`dsh plugin add` 源码安装与插件市场（dsh-market）从这里装，内容为当前安装包镜像 |
 
 > 设计文档、开发过程记录、历史版本安装包与本地开发历史不在本镜像（发布口径）。规范 v2.1 六区结构中的其余各区（00 项目管理/01 设计/03 开发协同/04 测试）属开发侧材料，不公开发布。
 
 ## 文档入口
 
-- 使用手册（最新）：`05-交付/安装包/dsh-orchestrator2-v2.10.1/presets/orchestrator2/docs/使用手册.md`
+- 使用手册（最新）：`05-交付/安装包/dsh-orchestrator2-v2.10.2/presets/orchestrator2/docs/使用手册.md`
 - 协同开发规范 v2.1：`02-代码/orchestrator2/spec/项目目录及协同开发规范-v2.1.md`
 - 插件工程说明：`02-代码/orchestrator2/README.md`
-- 安装后实测指引：`05-交付/安装包/dsh-orchestrator2-v2.10.1/测试入口说明.md`
+- 安装后实测指引：`05-交付/安装包/dsh-orchestrator2-v2.10.2/测试入口说明.md`
 
 ## License
 

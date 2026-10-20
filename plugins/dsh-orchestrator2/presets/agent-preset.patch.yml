@@ -160,7 +160,7 @@
           # 05-交付 3），区根只落正式文件与目录骨架；补复制源回退顺序句（项目内 `_模板/` → 旧平铺位 →
           # 预设包 spec/templates/，与规范 §10 兼容回退口径句、使用手册同源）；**D2** 页首注释加本包条目。
           # 机器层零改动（phase-gate/dispatch/budget 均不读区根模板平铺路径），工具契约不变。
-          # 当前发布版本：2.10.1（2026-10-13 codegraph 闭环强制同步升版——packaging.json / lib banner / 使用手册页首 /
+          # 当前发布版本：2.10.2（2026-10-20 DSH 0.2.1 适配升版——packaging.json / lib banner / 使用手册页首 /
           # README / 本行 五处同一候选 commit 原子切换；pkg-consistency 常量族随版本同步）。
           #
           # This file is an AGENT-PLANE composition. The roster mounts it ONCE under a

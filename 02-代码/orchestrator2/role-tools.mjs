@@ -6,7 +6,7 @@
  * D6 负责从 agent.cordis.yml 删除官方行）。行为与原官方行一致的部分：continuable
  * 后台派工、返回 `{ kind:'continuable', subagentId }`、取消/结果协议交给 spawn provider；
  * 不同的部分：路由每次派工现读（D1 持久配置 + D2 会话状态），并**先 bindChild 再
- * startContinuable**（绑定先于首次 request，消除竞争窗口）。
+ * startActivation**（绑定先于首次 request，消除竞争窗口）。
  *
  * 设置工具：`set_role_model` / `reset_role_model` / `inspect_role_models`——
  * 嵌套 `route` 对象（顶层无 provider/model/reasoning_effort 三字段，规避宿主 invariant，
@@ -117,7 +117,7 @@ export function resolveDispatchSnapshot(role, sessionId, home) {
 }
 
 /**
- * 建三条同名角色工具（execute 内：现读配置+会话状态 → 解析路由 → 先 bind 再 startContinuable）。
+ * 建三条同名角色工具（execute 内：现读配置+会话状态 → 解析路由 → 先 bind 再 startActivation）。
  * @param {object} ctx - cordis 上下文（需 ctx.tools）。
  * @param {{home?: string}} [options] - home 覆盖（测试注入）。
  * @returns {Array<() => void>} disposers。
@@ -141,13 +141,13 @@ export function registerRoleDispatchTools(ctx, options = {}) {
           throw new Error(`${toolName}：首版仅支持后台 continuable 派工（run_in_background 缺省 true）`)
         }
         const subagents = ctx.subagents
-        if (subagents === undefined || typeof subagents.startContinuable !== 'function') {
-          throw new Error(`${toolName}：子代理注册表不可用（ctx.subagents.startContinuable 缺失）`)
+        if (subagents === undefined || typeof subagents.startActivation !== 'function') {
+          throw new Error(`${toolName}：子代理注册表不可用（ctx.subagents.startActivation 缺失）`)
         }
         const home = options.home ?? resolveDshHome()
         const snapshot = resolveDispatchSnapshot(role, sessionId, home)
         const childId = randomUUID()
-        // 绑定先于首次 request：startContinuable 之前写入快照，消除竞争窗口（AC16）。
+        // 绑定先于首次 request：startActivation 之前写入快照，消除竞争窗口（AC16）。
         await bindChild(childId, {
           parentId: sessionId,
           role,
@@ -158,18 +158,18 @@ export function registerRoleDispatchTools(ctx, options = {}) {
           degraded: false,
         }, { home, sessionId })
         const maxDepth = typeof subagents.resolveMaxDepth === 'function' ? subagents.resolveMaxDepth(undefined) : undefined
-        const started = await subagents.startContinuable({
+        const started = await subagents.startActivation({
           provider: SPAWN_PROVIDER,
           label: args.description,
           childId,
           request: {
-            label: args.description,
             prompt: [{ type: 'text', text: args.prompt }],
             parent,
             agentOptions: routeToAgentOptions(snapshot.route),
             ...maxDepth === undefined ? {} : { maxDepth },
           },
           signal: exec.signal,
+          delivery: 'parent',
         })
         return { kind: 'continuable', subagentId: started.childId }
       },

@@ -191,7 +191,7 @@ export function resolveEffectiveRoute(role, sessionState, persistentConfig) {
 }
 
 /**
- * 绑定 child 派工快照（**必须在 startContinuable 之前**调用：绑定先于首次 request）。
+ * 绑定 child 派工快照（**必须在 startActivation 之前**调用：绑定先于首次 request）。
  * @param {string} childId - 子代理 session id。
  * @param {{parentId: string, role: string, epoch: number, primaryRoute: object, fallbackRoute: object, appliedRoute?: object}} binding
  * @param {{home?: string, sessionId: string}} options - sessionId = 主会话 ID（children 存在它名下）。

@@ -2,7 +2,9 @@
  * T3 + T5 · D3 三角色派工工具 / D5 模型设置工具单测（AC3 / AC11~AC16）。
  * Run: node 02-代码/orchestrator2/tests/suites/role-tools.test.mjs
  *
- * 覆盖：路由解析（默认/会话覆盖）、绑定先于 startContinuable（无竞争窗口，真实读文件断言）、
+ * 覆盖：路由解析（默认/会话覆盖）、绑定先于 startActivation（无竞争窗口，真实读文件断言）、
+ * startActivation spec 参数语义（delivery 严格 parent / request 不拥有 label+signal / 顶层 label+signal
+ * 与原请求一致——F-2 修订新增，别于「只把 mock 方法改名」）、
  * 返回契约 {kind:'continuable', subagentId}、schema 顶层无 provider/model/reasoning_effort、
  * 主调度会话限定（子代理不可调）、一次性覆盖提示且不落状态、永久槽位即时生效 + 未改槽位不变 +
  * 显式覆盖优先 + 在跑 child 不变、保存失败注入无成功回执。
@@ -33,7 +35,7 @@ const OTHER_SESSION = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
 const MAIN_AGENT = { id: SESSION_ID, session: { id: SESSION_ID, header: { cwd: ORCH2 } } }
 const exec = { agent: MAIN_AGENT, signal: new AbortController().signal }
 
-// ── 假 ctx：注册表 + spawn 注册表（startContinuable 内同步断言绑定已就位） ─────────
+// ── 假 ctx：注册表 + spawn 注册表（startActivation 内同步断言绑定已就位） ─────────
 const registered = new Map()
 const spawnCalls = []
 let bindingVisibleAtStart = false
@@ -47,7 +49,7 @@ const ctx = {
     },
   },
   subagents: {
-    async startContinuable(spec) {
+    async startActivation(spec) {
       const state = loadSessionState(SESSION_ID, { home })
       bindingSeen = state.children[spec.childId]
       bindingVisibleAtStart = bindingSeen !== undefined
@@ -84,13 +86,13 @@ check('AC15-5 三角色派工工具参数与官方行一致（description/prompt
   topFields('subagent_developer').length === 3,
   `[${topFields('subagent_developer').join(',')}]`)
 
-// ── AC3 + AC16：默认路由派工；绑定先于 startContinuable ─────────────────────────
+// ── AC3 + AC16：默认路由派工；绑定先于 startActivation ─────────────────────────
 const first = await registered.get('subagent_developer').execute(
   { description: '改代码', prompt: '把 X 改成 Y' }, exec)
 check('AC3-1 返回契约 {kind:"continuable", subagentId}（与官方行一致）',
   first.kind === 'continuable' && first.subagentId === spawnCalls[0].childId,
   JSON.stringify(first))
-check('AC16-1 绑定先于 startContinuable（spawn 调用时快照已可读，无竞争窗口）',
+check('AC16-1 绑定先于 startActivation（spawn 调用时快照已可读，无竞争窗口）',
   bindingVisibleAtStart === true && bindingSeen?.role === 'developer' && bindingSeen?.parentId === SESSION_ID,
   `start 内可见=${bindingVisibleAtStart} binding=${JSON.stringify(bindingSeen)}`)
 check('AC3-2 agentOptions = 当前生效路由三元组（默认：deepseek-official/deepseek-flash + max）',
@@ -103,6 +105,23 @@ check('AC3-3 spawn provider 协议字段齐备（provider/label/request.prompt/p
   spawnCalls[0].request.prompt[0].text === '把 X 改成 Y' && spawnCalls[0].request.parent === MAIN_AGENT &&
   spawnCalls[0].signal === exec.signal && typeof spawnCalls[0].childId === 'string',
   `provider=${spawnCalls[0].provider} childId=${spawnCalls[0].childId}`)
+
+// ── AC4（D3 新增）· startActivation 运行时 spec 参数语义 ─────────────────────────
+// 消费 D2 的新调用签名；断言对象是「真实调用形态」而非 mock 方法名：delivery 严格 parent、
+// request 不拥有 label/signal（用属性存在性检查，避免 `label: undefined` 冒充合规）、
+// spec 顶层 label/signal 与原请求一致。四项反例见 T8（.tmp 受控样本，不污染源码）。
+const ownsKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
+check('AC4-1 spec 顶层 delivery 严格 === "parent"（对齐宿主 0.2.1 startActivation 口径）',
+  spawnCalls[0].delivery === 'parent', `delivery=${JSON.stringify(spawnCalls[0].delivery)}`)
+check('AC4-2 request 不拥有 label（归属 spec 顶层，避免重复 label）',
+  ownsKey(spawnCalls[0].request, 'label') === false,
+  `request 自有键=[${Object.keys(spawnCalls[0].request).join(',')}]`)
+check('AC4-3 request 不拥有 signal（归属 spec 顶层，由宿主转发）',
+  ownsKey(spawnCalls[0].request, 'signal') === false,
+  `request 自有键=[${Object.keys(spawnCalls[0].request).join(',')}]`)
+check('AC4-4 顶层 label/signal 与原请求一致（description / 同一 AbortSignal 对象）',
+  spawnCalls[0].label === '改代码' && spawnCalls[0].signal === exec.signal,
+  `label=${spawnCalls[0].label}；signal 同一对象=${spawnCalls[0].signal === exec.signal}`)
 check('AC16-2 每次派工生成独立 childId（快照不复用）',
   spawnCalls.length === 1, `${spawnCalls.length} 次派工`)
 
